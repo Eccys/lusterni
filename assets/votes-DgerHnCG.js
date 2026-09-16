@@ -1,0 +1,1 @@
+import{t as e}from"./vote-page-C3cbNnjq.js";var t=e;export{t as component};

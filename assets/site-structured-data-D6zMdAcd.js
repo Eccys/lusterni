@@ -1,0 +1,1 @@
+import{c as e,u as t}from"./index-Dri83G-B.js";var n=t(),r=[{"@context":`https://schema.org`,"@type":`WebSite`,name:e.brand,url:e.siteUrl},{"@context":`https://schema.org`,"@type":`Organization`,name:e.brand,url:e.siteUrl,sameAs:[e.discordUrl]}];function i(){return(0,n.jsx)(`script`,{type:`application/ld+json`,dangerouslySetInnerHTML:{__html:JSON.stringify(r)}})}export{i as t};
