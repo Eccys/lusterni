@@ -1,0 +1,1 @@
+import{t as e}from"./vote-page-D74qSkrb.js";var t=e;export{t as component};
