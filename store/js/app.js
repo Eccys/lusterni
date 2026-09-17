@@ -193,7 +193,14 @@
     }
     try {
       const res = await api(`${CONFIG.apiRoot}/baskets/${ident}`);
-      state.basket = res?.data || null;
+      const basket = res?.data || null;
+      if (basket && basket.username) {
+        state.basket = basket;
+      } else {
+        // Discard baskets without an authenticated player username
+        storeBasketIdent(null);
+        state.basket = null;
+      }
     } catch (err) {
       console.warn("Stored basket invalid, discarding:", err.message);
       storeBasketIdent(null);
@@ -202,32 +209,34 @@
   }
 
   async function ensureBasketWithAuth(username) {
-    let ident = state.basket?.ident || getStoredBasketIdent();
-    if (!ident) {
-      const created = await api(`${accountApi}/baskets`, {
-        method: "POST",
-        body: JSON.stringify({
-          complete_url: completeUrl(),
-          cancel_url: cancelUrl(),
-        }),
-      });
-      ident = created?.data?.ident;
-      storeBasketIdent(ident);
-      state.basket = created?.data || null;
+    const targetUser = (username || state.basket?.username || "").trim();
+    if (!targetUser) {
+      throw new Error("Minecraft username is required.");
     }
 
-    if (username) {
-      const authRes = await api(`${CONFIG.apiRoot}/baskets/${ident}/users/authenticate`, {
-        method: "POST",
-        body: JSON.stringify({
-          username,
-          server_id: null,
-        }),
-      });
-      state.basket = authRes?.data || state.basket;
+    // Reuse active basket if it belongs to the same Minecraft user
+    if (state.basket?.ident && state.basket?.username?.toLowerCase() === targetUser.toLowerCase()) {
+      return state.basket.ident;
     }
 
-    return ident;
+    // Create a new basket session for this Minecraft username
+    const created = await api(`${accountApi}/baskets`, {
+      method: "POST",
+      body: JSON.stringify({
+        username: targetUser,
+        complete_url: completeUrl(),
+        cancel_url: cancelUrl(),
+      }),
+    });
+
+    const basket = created?.data;
+    if (!basket?.ident) {
+      throw new Error("Failed to create Tebex basket session.");
+    }
+
+    state.basket = basket;
+    storeBasketIdent(basket.ident);
+    return basket.ident;
   }
 
   function basketPackages() {
@@ -254,7 +263,8 @@
     const pkg = state.packagesById.get(Number(pkgId));
     if (!pkg) throw new Error("Package not found in catalog");
 
-    if (!state.basket?.username) {
+    const currentUsername = state.basket?.username;
+    if (!currentUsername) {
       state.pendingPackageId = Number(pkgId);
       setRoute({ view: "login" });
       showAlert("Please enter your Minecraft username first to add packages.", "danger");
@@ -263,7 +273,7 @@
 
     setBusy(true);
     try {
-      const ident = await ensureBasketWithAuth();
+      const ident = await ensureBasketWithAuth(currentUsername);
       const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages`, {
         method: "POST",
         body: JSON.stringify({
@@ -317,9 +327,17 @@
 
   async function giftPackage(pkgId, friendUsername) {
     if (!friendUsername) throw new Error("Friend's username required");
+    const currentUsername = state.basket?.username;
+    if (!currentUsername) {
+      state.pendingPackageId = Number(pkgId);
+      setRoute({ view: "login" });
+      showAlert("Please enter your Minecraft username first before gifting.", "danger");
+      return;
+    }
+
     setBusy(true);
     try {
-      const ident = await ensureBasketWithAuth();
+      const ident = await ensureBasketWithAuth(currentUsername);
       const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages`, {
         method: "POST",
         body: JSON.stringify({
@@ -739,6 +757,7 @@
       event.preventDefault();
       storeBasketIdent(null);
       state.basket = null;
+      closeCartDrawer();
       showAlert("Logged out of store session");
       render();
       return;
