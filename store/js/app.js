@@ -44,7 +44,15 @@
     if (!html) return "";
     return String(html)
       .replace(/https?:\/\/arcturusmc\.xyz\/discord/gi, CONFIG.discord)
-      .replace(/arcturusmc\.xyz/gi, "arcturusmc.org");
+      .replace(/arcturusmc\.xyz/gi, "arcturusmc.org")
+      .replace(
+        /You can buy ranks and pinatas with gold\./gi,
+        "You can buy tiers, pinatas, and chest keys with gold."
+      )
+      .replace(
+        /open a crate at spawn!/gi,
+        "open a crate at spawn."
+      );
   }
 
   function completeUrl() {
@@ -126,32 +134,207 @@
       url.searchParams.set("category", String(next.categoryId));
     }
     if (next.view === "complete") url.searchParams.set("checkout", "complete");
+
     if (replace) {
-      history.replaceState(next, "", url);
+      window.history.replaceState({}, "", url.toString());
     } else {
-      history.pushState(next, "", url);
+      window.history.pushState({}, "", url.toString());
     }
     state.view = next.view;
     state.categoryId = next.categoryId || null;
     render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function loadCatalog() {
+    const [storeRes, catRes, pkgRes] = await Promise.all([
+      api(accountApi),
+      api(`${accountApi}/categories?includePackages=1`),
+      api(`${accountApi}/packages`),
+    ]);
+
+    state.store = storeRes?.data || null;
+
+    const packages = Array.isArray(pkgRes?.data) ? pkgRes.data : [];
+    state.packagesById.clear();
+    packages.forEach((pkg) => {
+      state.packagesById.set(Number(pkg.id), pkg);
+    });
+
+    const rawCats = Array.isArray(catRes?.data) ? catRes.data : [];
+    state.categories = rawCats.map((cat) => {
+      const catPackages = (cat.packages || []).map((p) => {
+        const full = state.packagesById.get(Number(p.id));
+        return full || p;
+      });
+      return {
+        ...cat,
+        packages: catPackages,
+      };
+    });
+  }
+
+  function getStoredBasketIdent() {
+    return localStorage.getItem(CONFIG.storageKey) || null;
+  }
+
+  function storeBasketIdent(ident) {
+    if (ident) {
+      localStorage.setItem(CONFIG.storageKey, ident);
+    } else {
+      localStorage.removeItem(CONFIG.storageKey);
+    }
+  }
+
+  async function loadBasket() {
+    const ident = getStoredBasketIdent();
+    if (!ident) {
+      state.basket = null;
+      return;
+    }
+    try {
+      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}`);
+      state.basket = res?.data || null;
+    } catch (err) {
+      console.warn("Stored basket invalid, discarding:", err.message);
+      storeBasketIdent(null);
+      state.basket = null;
+    }
+  }
+
+  async function ensureBasketWithAuth(username) {
+    let ident = state.basket?.ident || getStoredBasketIdent();
+    if (!ident) {
+      const created = await api(`${accountApi}/baskets`, {
+        method: "POST",
+        body: JSON.stringify({
+          complete_url: completeUrl(),
+          cancel_url: cancelUrl(),
+        }),
+      });
+      ident = created?.data?.ident;
+      storeBasketIdent(ident);
+      state.basket = created?.data || null;
+    }
+
+    if (username) {
+      const authRes = await api(`${CONFIG.apiRoot}/baskets/${ident}/users/authenticate`, {
+        method: "POST",
+        body: JSON.stringify({
+          username,
+          server_id: null,
+        }),
+      });
+      state.basket = authRes?.data || state.basket;
+    }
+
+    return ident;
   }
 
   function basketPackages() {
     return state.basket?.packages || [];
   }
 
+  function packageInBasket(pkgId) {
+    const numeric = Number(pkgId);
+    return basketPackages().find((p) => Number(p.id) === numeric);
+  }
+
+  function packageQuantity(pkgId) {
+    const item = packageInBasket(pkgId);
+    return item ? Number(item.in_basket?.quantity || item.quantity || 1) : 0;
+  }
+
   function basketCount() {
-    return basketPackages().reduce((sum, item) => sum + Number(item.in_basket?.quantity || item.quantity || 1), 0);
+    return basketPackages().reduce((sum, item) => {
+      return sum + Number(item.in_basket?.quantity || item.quantity || 1);
+    }, 0);
   }
 
-  function packageInBasket(packageId) {
-    return basketPackages().find((item) => Number(item.id) === Number(packageId));
+  async function addPackage(pkgId, quantity = 1) {
+    const pkg = state.packagesById.get(Number(pkgId));
+    if (!pkg) throw new Error("Package not found in catalog");
+
+    if (!state.basket?.username) {
+      state.pendingPackageId = Number(pkgId);
+      setRoute({ view: "login" });
+      showAlert("Please enter your Minecraft username first to add packages.", "danger");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const ident = await ensureBasketWithAuth();
+      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages`, {
+        method: "POST",
+        body: JSON.stringify({
+          package_id: Number(pkgId),
+          quantity: Number(quantity),
+        }),
+      });
+      state.basket = res?.data || state.basket;
+      showAlert(`Added "${pkg.name}" to cart!`);
+      render();
+      openCartDrawer();
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function packageQuantity(packageId) {
-    const found = packageInBasket(packageId);
-    return Number(found?.in_basket?.quantity || found?.quantity || 0);
+  async function updatePackageQuantity(pkgId, newQty) {
+    const numericId = Number(pkgId);
+    if (newQty <= 0) {
+      return removePackage(numericId);
+    }
+    setBusy(true);
+    try {
+      const ident = state.basket?.ident || getStoredBasketIdent();
+      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages/${numericId}`, {
+        method: "PUT",
+        body: JSON.stringify({ quantity: Number(newQty) }),
+      });
+      state.basket = res?.data || state.basket;
+      render();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removePackage(pkgId) {
+    const numericId = Number(pkgId);
+    setBusy(true);
+    try {
+      const ident = state.basket?.ident || getStoredBasketIdent();
+      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages/${numericId}`, {
+        method: "DELETE",
+      });
+      state.basket = res?.data || state.basket;
+      showAlert("Package removed from cart");
+      render();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function giftPackage(pkgId, friendUsername) {
+    if (!friendUsername) throw new Error("Friend's username required");
+    setBusy(true);
+    try {
+      const ident = await ensureBasketWithAuth();
+      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages`, {
+        method: "POST",
+        body: JSON.stringify({
+          package_id: Number(pkgId),
+          gift_username: friendUsername.trim(),
+        }),
+      });
+      state.basket = res?.data || state.basket;
+      showAlert(`Gift package for "${friendUsername}" added to cart!`);
+      closeModal();
+      render();
+      openCartDrawer();
+    } finally {
+      setBusy(false);
+    }
   }
 
   function openCartDrawer() {
@@ -164,185 +347,13 @@
     els.cartDrawerOverlay.classList.remove("is-open");
   }
 
-  function copyText(text) {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text);
-    } else {
-      const field = document.createElement("textarea");
-      field.value = text;
-      field.style.position = "fixed";
-      field.style.opacity = "0";
-      document.body.appendChild(field);
-      field.select();
-      document.execCommand("copy");
-      document.body.removeChild(field);
-    }
-  }
-
-  async function loadCatalog() {
-    const [storeRes, catalogRes] = await Promise.all([
-      api(accountApi),
-      api(`${accountApi}/categories?includePackages=1`),
-    ]);
-    state.store = storeRes.data || storeRes;
-    state.categories = (catalogRes.data || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
-    state.packagesById.clear();
-    for (const category of state.categories) {
-      for (const pkg of category.packages || []) {
-        state.packagesById.set(Number(pkg.id), { ...pkg, category });
-      }
-    }
-  }
-
-  async function loadBasket(ident = localStorage.getItem(CONFIG.storageKey)) {
-    if (!ident) {
-      state.basket = null;
-      return;
-    }
-    try {
-      let payload;
-      try {
-        payload = await api(`${accountApi}/baskets/${ident}`);
-      } catch (error) {
-        if (error.status !== 404) throw error;
-        payload = await api(`${CONFIG.apiRoot}/baskets/${ident}`);
-      }
-      state.basket = payload.data || payload;
-      if (state.basket?.ident) localStorage.setItem(CONFIG.storageKey, state.basket.ident);
-    } catch {
-      localStorage.removeItem(CONFIG.storageKey);
-      state.basket = null;
-    }
-  }
-
-  async function createBasket(username) {
-    const payload = await api(`${accountApi}/baskets`, {
-      method: "POST",
-      body: JSON.stringify({
-        username,
-        complete_url: completeUrl(),
-        cancel_url: cancelUrl(),
-        complete_auto_redirect: true,
-      }),
-    });
-    state.basket = payload.data || payload;
-    if (!state.basket?.ident) throw new Error("Tebex did not return a basket.");
-    localStorage.setItem(CONFIG.storageKey, state.basket.ident);
-    return state.basket;
-  }
-
-  async function refreshBasket() {
-    if (!state.basket?.ident) return;
-    await loadBasket(state.basket.ident);
-  }
-
-  async function addPackage(packageId, extra = {}) {
-    if (!state.basket?.ident) {
-      state.pendingPackageId = packageId;
-      setRoute({ view: "login" });
-      return;
-    }
-    setBusy(true);
-    try {
-      const payload = await api(`${CONFIG.apiRoot}/baskets/${state.basket.ident}/packages`, {
-        method: "POST",
-        body: JSON.stringify({
-          package_id: Number(packageId),
-          quantity: extra.quantity || 1,
-          ...(extra.gift_username ? { gift_username: extra.gift_username } : {}),
-        }),
-      });
-      state.basket = payload.data || payload;
-      if (!state.basket?.packages) await refreshBasket();
-      showAlert("Package added to cart.");
-      render();
-      openCartDrawer();
-    } catch (error) {
-      showAlert(error.message, "danger");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function removePackage(packageId) {
-    if (!state.basket?.ident) return;
-    setBusy(true);
-    try {
-      let payload;
-      try {
-        payload = await api(`${CONFIG.apiRoot}/baskets/${state.basket.ident}/packages/remove`, {
-          method: "POST",
-          body: JSON.stringify({ package_id: Number(packageId) }),
-        });
-      } catch {
-        payload = await api(`${accountApi}/baskets/${state.basket.ident}/packages/remove`, {
-          method: "POST",
-          body: JSON.stringify({ package_id: Number(packageId) }),
-        });
-      }
-      state.basket = payload.data || payload;
-      if (!state.basket?.packages) await refreshBasket();
-      render();
-    } catch (error) {
-      showAlert(error.message, "danger");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function setQuantity(packageId, quantity) {
-    if (quantity < 1) {
-      await removePackage(packageId);
-      return;
-    }
-    if (!state.basket?.ident) return;
-    setBusy(true);
-    try {
-      let payload;
-      try {
-        payload = await api(`${CONFIG.apiRoot}/baskets/${state.basket.ident}/packages/${packageId}`, {
-          method: "PUT",
-          body: JSON.stringify({ quantity }),
-        });
-      } catch {
-        payload = await api(`${CONFIG.apiRoot}/baskets/${state.basket.ident}/packages`, {
-          method: "POST",
-          body: JSON.stringify({ package_id: Number(packageId), quantity }),
-        });
-      }
-      state.basket = payload.data || payload;
-      if (!state.basket?.packages) await refreshBasket();
-      render();
-    } catch (error) {
-      showAlert(error.message, "danger");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function checkout() {
-    const url = state.basket?.links?.checkout;
-    if (!url) {
-      showAlert("Add an item before checking out.", "danger");
-      return;
-    }
-    window.location.href = url;
-  }
-
-  function logout() {
-    localStorage.removeItem(CONFIG.storageKey);
-    state.basket = null;
-    closeCartDrawer();
-    render();
-    showAlert("Logged out of the store.");
-  }
-
-  function openPackageModal(packageId) {
-    const pkg = state.packagesById.get(Number(packageId));
+  function openPackageModal(pkgId) {
+    const pkg = state.packagesById.get(Number(pkgId));
     if (!pkg) return;
-    const inBasket = Boolean(packageInBasket(pkg.id));
+
     const container = els.modalContainer;
     const sanitizedDesc = sanitizeContent(pkg.description);
+    const inBasket = Boolean(packageInBasket(pkg.id));
 
     container.innerHTML = `
       <div class="hud-modal-header">
@@ -362,7 +373,7 @@
                 </button>
                 <form class="modal-gift-form" data-gift-form="${pkg.id}">
                   <input type="text" name="username" class="hud-input" placeholder="Friend's Minecraft IGN" required style="height: 2.5rem; font-size: 0.85rem;" />
-                  <button type="submit" class="site-button" style="min-height: 2.5rem; background: var(--accent); color: var(--accent-foreground); border: 1px solid var(--accent); font-size: 0.75rem;">Send Gift</button>
+                  <button type="submit" class="site-discord-btn" style="min-height: 2.5rem; font-size: 0.75rem;">Send Gift</button>
                 </form>
               </div>`
         }
@@ -378,7 +389,7 @@
                  <i class="fas fa-trash-alt"></i> Remove from Cart
                </button>`
             : `<button type="button" class="btn-purchase" data-add="${pkg.id}">
-                 <i class="fas fa-shopping-cart"></i> Add to Cart
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart" style="margin-right: 0.35rem;"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg> Add to Cart
                </button>`
         }
       </div>`;
@@ -420,7 +431,7 @@
     } else {
       els.headerCartSlot.innerHTML = `
         <button type="button" class="site-button-outline" data-route="login">
-          <i class="fas fa-user text-primary"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span>Login</span>
         </button>
       `;
@@ -492,7 +503,7 @@
            <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty + 1}" title="Increase quantity"><i class="fas fa-plus"></i></button>
          </div>`
       : `<button type="button" class="btn-purchase" data-add="${pkg.id}">
-           <i class="fas fa-shopping-cart"></i> Add to Cart
+           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart" style="margin-right: 0.35rem;"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg> Add to Cart
          </button>`;
 
     return `
@@ -527,21 +538,21 @@
            <i class="fas fa-check"></i> In Cart
          </button>`
       : `<button type="button" class="btn-purchase" data-add="${featPkg.id}" style="min-width: 170px;">
-           <i class="fas fa-shopping-cart"></i> Add to Cart
+           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart" style="margin-right: 0.35rem;"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg> Add to Cart
          </button>`;
 
     return `
       <section class="featured-section">
-        <div class="featured-card">
+        <div class="featured-card" data-info="${featPkg.id}">
           <div class="featured-badge"><span class="site-beacon"></span> FEATURED DEAL &bull; BEST VALUE</div>
           <div class="featured-inner">
             <div class="featured-img-wrap" data-info="${featPkg.id}">
               <img src="${featPkg.image || 'https://dunb17ur4ymx4.cloudfront.net/packages/images/49b8bbfe7956a67c08114a55a94b659699cac845.gif'}" alt="${escapeHtml(featPkg.name)}" />
             </div>
-            <div class="featured-details">
+            <div class="featured-details" data-info="${featPkg.id}">
               <h2 data-info="${featPkg.id}">${escapeHtml(featPkg.name)} Bundle</h2>
-              <p>Gold is the premium currency on Arcturus for upgrading yourself and unlocking special faction items, ranks, and server-wide pinatas.</p>
-              <div class="featured-price">${priceStr} <span class="featured-discount text-accent">+ MAXIMUM VALUE</span></div>
+              <p data-info="${featPkg.id}">Gold is the premium currency on Arcturus for upgrading yourself and getting special items. You can buy tiers, pinatas, and chest keys with gold.</p>
+              <div class="featured-price" data-info="${featPkg.id}">${priceStr} <span class="featured-discount text-accent">+ MAXIMUM VALUE</span></div>
             </div>
             <div class="featured-action">
               ${btnHtml}
@@ -612,7 +623,7 @@
       return;
     }
 
-    // Home view: Featured package + all categories (NO "welcome to the store" banner!)
+    // Home view: Featured package + all categories
     const featuredHtml = renderFeaturedPackage();
     const sections = state.categories.map((c) => renderCategorySection(c)).join("");
     els.content.innerHTML = `
@@ -628,35 +639,94 @@
     renderMain();
   }
 
-  async function handleLogin(username) {
-    setBusy(true);
-    try {
-      await createBasket(username.trim());
-      const pending = state.pendingPackageId;
-      state.pendingPackageId = null;
-      if (pending) {
-        await addPackage(pending);
-      } else {
-        showAlert(`Logged in as ${username.trim()}.`);
-        setRoute({ view: "home" }, true);
-      }
-      if (pending) setRoute({ view: "home" }, true);
-    } catch (error) {
-      showAlert(error.message, "danger");
-    } finally {
-      setBusy(false);
+  function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    } else {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      temp.remove();
     }
   }
 
-  function onClick(event) {
-    // Modal close
-    if (event.target.closest("[data-close-modal]") || event.target === els.modalOverlay) {
+  async function onClick(event) {
+    // Nav route link
+    const routeLink = event.target.closest("[data-route]");
+    if (routeLink) {
+      event.preventDefault();
+      const routeType = routeLink.getAttribute("data-route");
+      if (routeType === "home") {
+        setRoute({ view: "home" });
+      } else if (routeType === "category") {
+        const catId = routeLink.getAttribute("data-category");
+        setRoute({ view: "category", categoryId: Number(catId) });
+      } else if (routeType === "login") {
+        setRoute({ view: "login" });
+      }
+      return;
+    }
+
+    // Add to cart
+    const addBtn = event.target.closest("[data-add]");
+    if (addBtn) {
+      event.preventDefault();
+      const pkgId = addBtn.getAttribute("data-add");
+      addPackage(pkgId).catch((err) => showAlert(err.message, "danger"));
+      return;
+    }
+
+    // Remove from cart
+    const removeBtn = event.target.closest("[data-remove]");
+    if (removeBtn) {
+      event.preventDefault();
+      const pkgId = removeBtn.getAttribute("data-remove");
+      removePackage(pkgId).catch((err) => showAlert(err.message, "danger"));
+      return;
+    }
+
+    // Quantity update
+    const qtyBtn = event.target.closest("[data-qty]");
+    if (qtyBtn) {
+      event.preventDefault();
+      const pkgId = qtyBtn.getAttribute("data-qty");
+      const next = Number(qtyBtn.getAttribute("data-next") || 0);
+      updatePackageQuantity(pkgId, next).catch((err) => showAlert(err.message, "danger"));
+      return;
+    }
+
+    // Package info modal via data-info (image, title, or featured card)
+    const info = event.target.closest("[data-info]");
+    if (info && !event.target.closest("[data-add], [data-remove], [data-qty], .quantity-control, button, a")) {
+      event.preventDefault();
+      openPackageModal(info.getAttribute("data-info"));
+      return;
+    }
+
+    // Open Cart drawer
+    if (event.target.closest("[data-open-cart]")) {
+      event.preventDefault();
+      openCartDrawer();
+      return;
+    }
+
+    // Close Cart drawer
+    if (event.target.closest("[data-close-drawer]")) {
+      event.preventDefault();
+      closeCartDrawer();
+      return;
+    }
+
+    // Close Modal
+    if (event.target.closest("[data-close-modal]") || event.target.id === "packageModal") {
       event.preventDefault();
       closeModal();
       return;
     }
 
-    // Gift section toggle
+    // Toggle Gifting
     if (event.target.closest("[data-toggle-gift]")) {
       event.preventDefault();
       const form = $(".modal-gift-form");
@@ -664,95 +734,41 @@
       return;
     }
 
-    // Cart drawer open/close
-    if (event.target.closest("[data-open-cart]")) {
+    // Logout from session
+    if (event.target.closest("#cartLogoutBtn")) {
       event.preventDefault();
-      openCartDrawer();
-      return;
-    }
-    if (event.target.closest("[data-close-drawer]")) {
-      event.preventDefault();
-      closeCartDrawer();
-      return;
-    }
-
-    // Package info modal via data-info (image or title)
-    const info = event.target.closest("[data-info]");
-    if (info) {
-      event.preventDefault();
-      openPackageModal(info.getAttribute("data-info"));
-      return;
-    }
-
-    // Add package
-    const add = event.target.closest("[data-add]");
-    if (add) {
-      event.preventDefault();
-      closeModal();
-      addPackage(add.getAttribute("data-add"));
-      return;
-    }
-
-    // Remove package
-    const remove = event.target.closest("[data-remove]");
-    if (remove) {
-      event.preventDefault();
-      removePackage(remove.getAttribute("data-remove"));
-      closeModal();
-      return;
-    }
-
-    // Quantity update
-    const qty = event.target.closest("[data-qty]");
-    if (qty) {
-      event.preventDefault();
-      setQuantity(qty.getAttribute("data-qty"), Number(qty.getAttribute("data-next")));
-      return;
-    }
-
-    // Routes
-    const route = event.target.closest("[data-route]");
-    if (route) {
-      event.preventDefault();
-      const view = route.getAttribute("data-route");
-      if (view === "home") setRoute({ view: "home" });
-      if (view === "login") setRoute({ view: "login" });
-      if (view === "category") setRoute({ view: "category", categoryId: Number(route.getAttribute("data-category")) });
+      storeBasketIdent(null);
+      state.basket = null;
+      showAlert("Logged out of store session");
+      render();
       return;
     }
 
     // Checkout
     if (event.target.closest("#cartCheckoutBtn")) {
       event.preventDefault();
-      checkout();
+      const checkoutUrl = state.basket?.links?.checkout;
+      if (!checkoutUrl) {
+        showAlert("Basket is empty or checkout URL unavailable", "danger");
+        return;
+      }
+      window.location.href = checkoutUrl;
       return;
     }
 
-    // Logout
-    if (event.target.closest("#cartLogoutBtn")) {
-      event.preventDefault();
-      logout();
-      return;
-    }
-
-    // Sidebar Copy IP (Exact Main Page Behavior)
-    const copyBtn = event.target.closest("#sidebarCopyBtn");
+    // Copy IP (Hero or Sidebar)
+    const copyBtn = event.target.closest("#heroCopyBtn, #sidebarCopyBtn");
     if (copyBtn) {
       event.preventDefault();
       copyText(CONFIG.server);
       copyBtn.classList.add("is-copied");
-      const icon = $("#copyBtnIcon");
-      const sub = $("#copyBtnSub");
-      if (icon) {
-        icon.className = "fas fa-check";
-      }
+      const sub = copyBtn.querySelector(".copy-sub, #copyBtnSub");
       if (sub) {
         sub.textContent = "Copied to clipboard!";
       }
       window.clearTimeout(copyBtn.timer);
       copyBtn.timer = window.setTimeout(() => {
         copyBtn.classList.remove("is-copied");
-        if (icon) icon.className = "fas fa-copy";
         if (sub) sub.textContent = "Click to copy IP";
       }, 2200);
       showAlert("Server IP copied to clipboard: " + CONFIG.server);
@@ -760,24 +776,44 @@
     }
   }
 
-  function onSubmit(event) {
-    const login = event.target.closest("[data-login-form]");
-    if (login) {
+  async function onSubmit(event) {
+    // Login form submit
+    const loginForm = event.target.closest("[data-login-form]");
+    if (loginForm) {
       event.preventDefault();
-      const username = new FormData(login).get("ign");
-      if (username) handleLogin(String(username));
+      const input = loginForm.querySelector("input[name='ign']");
+      const ign = (input?.value || "").trim();
+      if (!ign) return;
+
+      setBusy(true);
+      try {
+        await ensureBasketWithAuth(ign);
+        showAlert(`Logged in as "${ign}"`);
+        if (state.pendingPackageId) {
+          const pkgId = state.pendingPackageId;
+          state.pendingPackageId = null;
+          setRoute({ view: "home" });
+          await addPackage(pkgId);
+        } else {
+          setRoute({ view: "home" });
+        }
+      } catch (err) {
+        showAlert(`Login error: ${err.message}`, "danger");
+      } finally {
+        setBusy(false);
+      }
       return;
     }
 
-    const gift = event.target.closest("[data-gift-form]");
-    if (gift) {
+    // Gift form submit
+    const giftForm = event.target.closest("[data-gift-form]");
+    if (giftForm) {
       event.preventDefault();
-      const username = new FormData(gift).get("username");
-      const packageId = gift.getAttribute("data-gift-form");
-      if (username) {
-        closeModal();
-        addPackage(packageId, { gift_username: String(username) });
-      }
+      const pkgId = giftForm.getAttribute("data-gift-form");
+      const input = giftForm.querySelector("input[name='username']");
+      const friend = (input?.value || "").trim();
+      if (!friend) return;
+      giftPackage(pkgId, friend).catch((err) => showAlert(err.message, "danger"));
       return;
     }
   }
@@ -790,10 +826,10 @@
     els.content = $("#content");
     els.cartDrawer = $("#cartDrawer");
     els.cartDrawerOverlay = $("#cartDrawerOverlay");
+    els.cartDrawerItems = $("#cartDrawerItems");
     els.cartUsername = $("#cartUsername");
     els.cartUserAvatar = $("#cartUserAvatar");
     els.cartLogoutBtn = $("#cartLogoutBtn");
-    els.cartDrawerItems = $("#cartDrawerItems");
     els.cartTotalAmount = $("#cartTotalAmount");
     els.modalOverlay = $("#packageModal");
     els.modalContainer = $("#packageModalContainer");

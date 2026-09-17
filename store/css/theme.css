@@ -3,7 +3,7 @@
    Aesthetic Tenets:
    1. Cyber-Tactical Typography (Black Ops One & Chakra Petch)
    2. Deep-Void Surface with Electric Cyan & Faction Amber Accents
-   3. Rigid Geometric Precision & Minimalist Edge Radii (4px)
+   3. Rigid Geometric Precision & Minimalist Edge Radii (0px on buttons)
    4. Atmospheric Cyber Grid & Ambient Glows
    5. Technical Modular HUD Card Architecture
    6. Dual-Deck Action Buttons with Kinetic HUD Feedback
@@ -52,25 +52,29 @@
 
 :root {
   --radius: 0.25rem;
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
-  
+  --radius-sm: 0px;
+
+  /* Color Palette (Matching Main Site) */
   --background: oklch(0.115 0.018 254);
   --foreground: oklch(0.95 0.015 243);
   --card: oklch(0.16 0.025 254);
-  --card-elevated: oklch(0.19 0.028 254);
+  --card-foreground: oklch(0.95 0.015 243);
   --popover: oklch(0.14 0.021 254);
+  --popover-foreground: oklch(0.95 0.015 243);
+
+  /* Cyan Brand Primary & Faction Gold Accent */
   --primary: oklch(0.78 0.13 203);
   --primary-foreground: oklch(0.12 0.025 245);
   --deep-accent: oklch(0.45 0.1 210);
+  --accent: oklch(0.70 0.18 53);
+  --accent-foreground: oklch(0.13 0.018 254);
+
   --secondary: oklch(0.23 0.035 260);
   --secondary-foreground: oklch(0.94 0.015 243);
   --muted: oklch(0.19 0.023 255);
-  --muted-foreground: oklch(0.7 0.025 244);
-  --accent: oklch(0.7 0.18 53);
-  --accent-foreground: oklch(0.13 0.018 254);
+  --muted-foreground: oklch(0.70 0.025 244);
   --border: oklch(0.36 0.045 250);
-  --input: oklch(0.3 0.04 250);
+  --input: oklch(0.30 0.04 250);
   --ring: oklch(0.78 0.13 203);
 
   --font-display: "Black Ops One", Impact, "Arial Narrow", sans-serif;
@@ -172,7 +176,7 @@ body {
 .site-header-inner {
   position: relative;
   display: flex;
-  height: 4.25rem;
+  height: 4rem;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -181,17 +185,18 @@ body {
 .site-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   color: var(--foreground);
   text-decoration: none;
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1rem;
   z-index: 2;
 }
 
+/* Sleek Icon Size in Top-Left (refined to not look oversized) */
 .site-brand-logo {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.65rem;
+  height: 1.65rem;
   object-fit: contain;
   transition: transform 0.2s ease;
 }
@@ -204,7 +209,7 @@ body {
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
 }
 
 /* CENTERED DESKTOP NAVIGATION */
@@ -268,17 +273,16 @@ body {
   gap: 0.65rem;
   padding: 0.5rem 0.95rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: color-mix(in oklab, var(--card) 85%, transparent);
+  border-radius: 0 !important;
+  background: color-mix(in oklab, var(--background) 70%, transparent);
   color: var(--foreground);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .header-cart-btn:hover {
-  border-color: var(--accent);
-  background: color-mix(in oklab, var(--card) 95%, transparent);
-  transform: translateY(-1px);
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
 }
 
 .header-cart-btn.has-items {
@@ -293,7 +297,7 @@ body {
   min-width: 1.25rem;
   height: 1.25rem;
   padding: 0 0.35rem;
-  border-radius: var(--radius-sm);
+  border-radius: 0 !important;
   background: var(--accent);
   color: var(--accent-foreground);
   font-size: 0.7rem;
@@ -320,8 +324,51 @@ body {
   font-weight: 600;
 }
 
+/* Header Login Button (Matches Discord Button Aesthetic) */
+.site-button-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0 !important;
+  background: color-mix(in oklab, var(--background) 70%, transparent);
+  color: var(--foreground);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.site-button-outline svg {
+  color: currentColor;
+  transition: color 0.2s ease;
+}
+
+.site-button-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.site-button-outline:hover svg {
+  color: var(--primary);
+}
+
+.site-button-outline:active {
+  transform: scale(0.95);
+}
+
 /* ==========================================================================
-   MAIN PAGE BUTTONS (EXACT STYLING & ANIMATIONS)
+   BUTTON AESTHETICS (EXACT HOME PAGE DISCORD BUTTON & COPY IP)
    ========================================================================== */
 /* Copy Server IP Dual-Deck Button */
 .copy-server-btn {
@@ -330,7 +377,7 @@ body {
   width: 100%;
   flex-direction: column;
   overflow: hidden;
-  border-radius: var(--radius-sm);
+  border-radius: 0 !important;
   border: 1px solid var(--primary);
   background: var(--primary);
   color: var(--primary-foreground);
@@ -356,17 +403,20 @@ body {
   justify-content: center;
   gap: 0.5rem;
   padding: 0 1.25rem;
+  font-family: var(--font-sans);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.95rem;
 }
 
+.copy-server-btn .copy-main svg,
 .copy-server-btn .copy-main i {
-  font-size: 1.1rem;
+  color: currentColor;
   transition: transform 0.2s ease;
 }
 
+.copy-server-btn.is-copied .copy-main svg,
 .copy-server-btn.is-copied .copy-main i {
   transform: scale(1.15);
 }
@@ -379,6 +429,7 @@ body {
   justify-content: center;
   background: var(--deep-accent);
   padding: 0 0.75rem;
+  font-family: var(--font-sans);
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -391,7 +442,7 @@ body {
   background: color-mix(in oklab, var(--deep-accent) 85%, black);
 }
 
-/* Discord Button (Matching Main Page) */
+/* Discord Button (Exact Home Page: 0px Radius, Subtle Border, Outline Users Icon) */
 .site-discord-btn {
   display: inline-flex;
   min-height: 2.75rem;
@@ -399,11 +450,12 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: var(--radius-sm);
+  border-radius: 0 !important;
   border: 1px solid var(--border);
   background: color-mix(in oklab, var(--background) 70%, transparent);
   color: var(--foreground);
   backdrop-filter: blur(8px);
+  font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -412,10 +464,23 @@ body {
   cursor: pointer;
   padding: 0.65rem 1.75rem;
   transition: all 0.2s ease;
+  outline: none;
+  box-shadow: none;
+}
+
+.site-discord-btn svg {
+  color: currentColor;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
 }
 
 .site-discord-btn:hover {
   border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.site-discord-btn:hover svg {
   color: var(--primary);
 }
 
@@ -423,80 +488,63 @@ body {
   transform: scale(0.95);
 }
 
-/* Standard Outline Button */
-.site-button-outline {
+/* Add to Cart Button (Exact Same CSS as Join Discord Button) */
+.btn-purchase {
   display: inline-flex;
+  min-height: 2.75rem;
+  height: 2.75rem;
+  width: 100%;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 2.5rem;
-  padding: 0.5rem 1rem;
+  border-radius: 0 !important;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   background: color-mix(in oklab, var(--background) 70%, transparent);
   color: var(--foreground);
-  font-size: 0.8rem;
+  backdrop-filter: blur(8px);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.site-button-outline:hover {
-  border-color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 12%, transparent);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
-/* ==========================================================================
-   PACKAGE PURCHASE BUTTON (NO BORDER RADIUS, NO SUB-DECK, NO DARK OUTLINE)
-   ========================================================================== */
-.btn-purchase {
-  width: 100%;
-  height: 2.75rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 0 !important;
-  border: 1px solid var(--primary);
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  cursor: pointer;
+  padding: 0.5rem 1rem;
   transition: all 0.2s ease;
   outline: none;
   box-shadow: none;
 }
 
+.btn-purchase svg {
+  color: currentColor;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
 .btn-purchase:hover {
-  background: color-mix(in oklab, var(--primary) 85%, white);
-  border-color: color-mix(in oklab, var(--primary) 85%, white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px -2px color-mix(in oklab, var(--primary) 40%, transparent);
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.btn-purchase:hover svg {
+  color: var(--primary);
 }
 
 .btn-purchase:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.95);
 }
 
 .btn-purchase.is-in-cart {
-  border-radius: 0 !important;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-foreground);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
 }
 
 .btn-purchase.is-in-cart:hover {
-  background: color-mix(in oklab, var(--accent) 85%, white);
-  border-color: color-mix(in oklab, var(--accent) 85%, white);
+  border-color: color-mix(in oklab, var(--accent) 80%, white);
+  color: color-mix(in oklab, var(--accent) 80%, white);
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
 }
 
 /* Checkout Button in Drawer */
@@ -527,14 +575,27 @@ body {
 }
 
 /* ==========================================================================
-   HERO / BANNER SECTION
+   HERO / BANNER SECTION (WITH FLOATING SERVER INFO CARD VERTICALLY CENTERED)
    ========================================================================== */
 .store-hero {
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, color-mix(in oklab, var(--card) 40%, transparent) 0%, var(--background) 100%);
-  padding: 3rem 0 2.25rem;
+  padding: 3.5rem 0 3rem;
+}
+
+.store-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: center; /* VERTICALLY CENTERED */
+}
+
+@media (min-width: 960px) {
+  .store-hero-grid {
+    grid-template-columns: 1fr 340px;
+  }
 }
 
 .site-eyebrow {
@@ -551,7 +612,7 @@ body {
 
 .store-hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 5.5vw, 4rem);
+  font-size: clamp(2rem, 5vw, 3.75rem);
   text-transform: uppercase;
   line-height: 0.95;
   letter-spacing: 0.02em;
@@ -563,12 +624,17 @@ body {
   border-left: 2px solid var(--accent);
   padding-left: 0.85rem;
   color: color-mix(in oklab, var(--foreground) 85%, transparent);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
   line-height: 1.6;
 }
 
+.hero-server-card {
+  margin-bottom: 0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
 /* ==========================================================================
-   LAYOUT: SIDEBAR + CONTENT
+   STORE LAYOUT & HUD SIDEBAR
    ========================================================================== */
 .store-layout {
   display: grid;
@@ -583,9 +649,6 @@ body {
   }
 }
 
-/* ==========================================================================
-   MODULAR HUD SIDEBAR
-   ========================================================================== */
 .hud-panel {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -642,7 +705,7 @@ body {
 }
 
 /* ==========================================================================
-   FEATURED PACKAGE SECTION
+   FEATURED PACKAGE SECTION (CURSOR POINTER ON HOVER)
    ========================================================================== */
 .featured-section {
   margin-bottom: 3rem;
@@ -655,6 +718,13 @@ body {
   background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 10%, var(--card)) 0%, var(--card) 100%);
   padding: 1.5rem;
   box-shadow: 0 8px 32px -8px color-mix(in oklab, var(--accent) 25%, transparent);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.featured-card:hover {
+  border-color: color-mix(in oklab, var(--accent) 85%, white);
+  box-shadow: 0 8px 36px -6px color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
 .featured-badge {
@@ -687,6 +757,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100px;
+  cursor: pointer;
 }
 
 .featured-img-wrap img {
@@ -696,8 +767,12 @@ body {
   transition: transform 0.3s ease;
 }
 
-.featured-img-wrap:hover img {
+.featured-card:hover .featured-img-wrap img {
   transform: scale(1.1);
+}
+
+.featured-details {
+  cursor: pointer;
 }
 
 .featured-details h2 {
@@ -707,6 +782,7 @@ body {
   letter-spacing: 0.04em;
   color: var(--foreground);
   transition: color 0.2s ease;
+  cursor: pointer;
 }
 
 .featured-details h2:hover {
@@ -718,6 +794,7 @@ body {
   font-size: 0.875rem;
   margin-top: 0.35rem;
   line-height: 1.5;
+  cursor: pointer;
 }
 
 .featured-price {
@@ -725,6 +802,7 @@ body {
   font-weight: 700;
   color: var(--accent);
   margin-top: 0.5rem;
+  cursor: pointer;
 }
 
 .featured-discount {
@@ -885,6 +963,7 @@ body {
   align-items: center;
   justify-content: space-between;
   border: 1px solid var(--border);
+  border-radius: 0 !important;
   background: color-mix(in oklab, var(--card) 90%, transparent);
   height: 2.75rem;
   padding: 0 0.25rem;
@@ -923,15 +1002,15 @@ body {
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
-  z-index: 200;
+  z-index: 150;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s ease;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
 .cart-drawer-overlay.is-open {
   opacity: 1;
-  visibility: visible;
+  pointer-events: auto;
 }
 
 .cart-drawer {
@@ -942,12 +1021,12 @@ body {
   width: min(100%, 420px);
   background: var(--card);
   border-left: 1px solid var(--border);
-  z-index: 201;
+  z-index: 160;
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.6);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
 }
 
 .cart-drawer.is-open {
@@ -967,90 +1046,86 @@ body {
   font-family: var(--font-display);
   font-size: 1.25rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  color: var(--foreground);
+  gap: 0.5rem;
 }
 
 .cart-drawer-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   background: transparent;
+  border: none;
   color: var(--muted-foreground);
+  font-size: 1.25rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.25rem;
+  transition: color 0.15s ease;
 }
 
 .cart-drawer-close:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  color: var(--foreground);
 }
 
 .cart-drawer-user {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  background: color-mix(in oklab, var(--background) 50%, transparent);
+  gap: 0.75rem;
+  padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--background) 50%, transparent);
 }
 
 .cart-user-avatar {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--card);
-  object-fit: contain;
+  background: var(--background);
 }
 
 .cart-user-info {
   flex: 1;
+  min-width: 0;
 }
 
 .cart-user-label {
   font-size: 0.65rem;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--muted-foreground);
-  letter-spacing: 0.06em;
-  font-weight: 700;
 }
 
 .cart-user-name {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cart-drawer-items {
   flex: 1;
   overflow-y: auto;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .cart-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  gap: 1rem;
+  padding: 0.85rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: color-mix(in oklab, var(--background) 60%, transparent);
-  margin-bottom: 0.75rem;
+  background: color-mix(in oklab, var(--background) 50%, transparent);
 }
 
 .cart-item-info {
   flex: 1;
   min-width: 0;
-  padding-right: 0.75rem;
 }
 
 .cart-item-title {
@@ -1064,23 +1139,25 @@ body {
 }
 
 .cart-item-price {
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.8rem;
   color: var(--accent);
+  font-weight: 700;
   margin-top: 0.2rem;
 }
 
 .cart-drawer-footer {
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--border);
   background: color-mix(in oklab, var(--card) 95%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .cart-total-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
 }
 
 .cart-total-label {
@@ -1088,57 +1165,54 @@ body {
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted-foreground);
 }
 
 .cart-total-amount {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.04em;
 }
 
 /* ==========================================================================
-   MODAL DIALOG (Package Details & Login)
+   HUD MODAL DIALOG
    ========================================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(6px);
-  z-index: 300;
-  display: none;
-  place-items: center;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 
 .modal-overlay.is-open {
-  display: grid;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .hud-modal {
-  position: relative;
   width: min(100%, 540px);
-  max-height: 90vh;
+  max-height: min(90vh, 700px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius);
-  background: var(--card);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8), 0 0 24px color-mix(in oklab, var(--primary) 20%, transparent);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
   overflow: hidden;
-  animation: modal-enter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform: scale(0.96);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes modal-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.modal-overlay.is-open .hud-modal {
+  transform: scale(1);
 }
 
 .hud-modal-header {
@@ -1155,28 +1229,25 @@ body {
   font-size: 1.35rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--foreground);
+  color: var(--primary);
 }
 
 .hud-modal-body {
-  padding: 1.5rem;
+  flex: 1;
   overflow-y: auto;
-  line-height: 1.7;
-  color: color-mix(in oklab, var(--foreground) 90%, transparent);
+  padding: 1.5rem;
   font-size: 0.95rem;
-}
-
-.hud-modal-body strong {
-  color: var(--primary);
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--foreground) 90%, transparent);
 }
 
 .hud-modal-footer {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--border);
-  background: color-mix(in oklab, var(--background) 70%, transparent);
+  background: color-mix(in oklab, var(--card) 95%, transparent);
 }
 
 .modal-price-row {
@@ -1186,85 +1257,85 @@ body {
 }
 
 .modal-price-val {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--accent);
 }
 
-/* Inputs */
+/* ==========================================================================
+   INPUTS & ALERTS
+   ========================================================================== */
 .hud-input {
   width: 100%;
-  height: 3rem;
+  height: 2.75rem;
+  background: color-mix(in oklab, var(--background) 70%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: color-mix(in oklab, var(--background) 80%, transparent);
-  padding: 0 1rem;
   color: var(--foreground);
+  padding: 0 1rem;
   font-family: var(--font-sans);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hud-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 25%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 20%, transparent);
 }
 
-/* Alert Notification */
 .site-alert {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  z-index: 400;
-  display: none;
-  border-radius: var(--radius);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   padding: 0.85rem 1.25rem;
-  font-weight: 700;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
   font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  animation: alert-enter 0.25s ease both;
-}
-
-@keyframes alert-enter {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  font-weight: 600;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(150%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
 .site-alert.is-visible {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .site-alert--success {
-  background: var(--card);
-  border: 1px solid var(--primary);
+  border-color: var(--primary);
+  color: var(--foreground);
+}
+
+.site-alert--success i {
   color: var(--primary);
 }
 
 .site-alert--danger {
-  background: var(--card);
-  border: 1px solid var(--destructive);
-  color: var(--destructive);
+  border-color: var(--accent);
+  color: var(--foreground);
 }
 
-/* Site Footer */
+.site-alert--danger i {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  background: color-mix(in oklab, var(--background) 90%, transparent);
-  padding: 2.5rem 0;
+  background: var(--card);
+  padding: 2.25rem 0;
   font-size: 0.85rem;
   color: var(--muted-foreground);
 }
