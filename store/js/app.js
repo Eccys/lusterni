@@ -6,6 +6,7 @@
     discord: "https://discord.gg/DTR6serkeM",
     discordId: "1127553089533120562",
     storageKey: "arcturus.tebex.basket",
+    featuredPackageId: 6052238, // 11,000 Gold Bundle
   };
 
   const accountApi = `${CONFIG.apiRoot}/accounts/${CONFIG.publicToken}`;
@@ -44,10 +45,6 @@
     return String(html)
       .replace(/https?:\/\/arcturusmc\.xyz\/discord/gi, CONFIG.discord)
       .replace(/arcturusmc\.xyz/gi, "arcturusmc.org");
-  }
-
-  function getBaseStoreUrl() {
-    return `${window.location.origin}/`;
   }
 
   function completeUrl() {
@@ -377,13 +374,11 @@
         </div>
         ${
           inBasket
-            ? `<button type="button" class="btn-dual-deck btn-dual-deck--active" data-remove="${pkg.id}">
-                 <span class="deck-main"><i class="fas fa-trash-alt"></i> Remove from Cart</span>
-                 <span class="deck-sub">Currently in your cart</span>
+            ? `<button type="button" class="btn-purchase is-in-cart" data-remove="${pkg.id}">
+                 <i class="fas fa-trash-alt"></i> Remove from Cart
                </button>`
-            : `<button type="button" class="btn-dual-deck" data-add="${pkg.id}">
-                 <span class="deck-main"><i class="fas fa-shopping-cart"></i> Add to Cart</span>
-                 <span class="deck-sub">Instant delivery in-game</span>
+            : `<button type="button" class="btn-purchase" data-add="${pkg.id}">
+                 <i class="fas fa-shopping-cart"></i> Add to Cart
                </button>`
         }
       </div>`;
@@ -398,11 +393,11 @@
     const activeCat = state.view === "category" ? Number(state.categoryId) : null;
     const catItems = state.categories.map((cat) => {
       const activeClass = activeCat === Number(cat.id) ? "active" : "";
-      return `<li class="${activeClass}"><a href="/?category=${cat.id}" data-route="category" data-category="${cat.id}">${escapeHtml(cat.name)}</a></li>`;
+      return `<a href="/?category=${cat.id}" class="${activeClass}" data-route="category" data-category="${cat.id}">${escapeHtml(cat.name)}</a>`;
     }).join("");
 
     els.categoryNav.innerHTML = `
-      <li class="${state.view === "home" || state.view === "complete" ? "active" : ""}"><a href="/" data-route="home"><i class="fas fa-home"></i> Home</a></li>
+      <a href="/" class="${state.view === "home" || state.view === "complete" ? "active" : ""}" data-route="home">Home</a>
       ${catItems}
     `;
   }
@@ -470,7 +465,7 @@
             <div class="cart-item-title">${escapeHtml(pkg.name)}</div>
             <div class="cart-item-price">${money(price, currency)}</div>
           </div>
-          <div class="quantity-control" style="height: 2rem;">
+          <div class="quantity-control" style="height: 2.25rem;">
             <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty - 1}"><i class="fas fa-minus" style="font-size: 0.7rem;"></i></button>
             <span class="quantity-display" style="padding: 0 0.5rem; font-size: 0.85rem;">${qty}</span>
             <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty + 1}"><i class="fas fa-plus" style="font-size: 0.7rem;"></i></button>
@@ -496,30 +491,64 @@
            <span class="quantity-display">${qty} in cart</span>
            <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty + 1}" title="Increase quantity"><i class="fas fa-plus"></i></button>
          </div>`
-      : `<button type="button" class="btn-dual-deck" data-add="${pkg.id}">
-           <span class="deck-main"><i class="fas fa-shopping-cart"></i> Add to Cart</span>
-           <span class="deck-sub">Instant delivery</span>
+      : `<button type="button" class="btn-purchase" data-add="${pkg.id}">
+           <i class="fas fa-shopping-cart"></i> Add to Cart
          </button>`;
 
     return `
       <article class="package-card">
         <div class="package-card-top">
           <span class="package-index">${indexStr}</span>
-          <button type="button" class="package-info-btn" data-info="${pkg.id}" title="Package details">
-            <i class="fas fa-info"></i>
-          </button>
         </div>
-        <div class="package-image-wrap">
+        <div class="package-image-wrap" data-info="${pkg.id}">
           ${imageHtml}
         </div>
         <div class="package-card-body">
-          <h3 class="package-card-title">${escapeHtml(pkg.name)}</h3>
+          <h3 class="package-card-title" data-info="${pkg.id}">${escapeHtml(pkg.name)}</h3>
           <div class="package-card-price">${money(pkg.total_price ?? pkg.base_price, currency)}</div>
         </div>
         <div class="package-card-actions">
           ${buttonHtml}
         </div>
       </article>
+    `;
+  }
+
+  function renderFeaturedPackage() {
+    const featPkg = state.packagesById.get(CONFIG.featuredPackageId) || state.packagesById.get(6052238);
+    if (!featPkg) return "";
+
+    const inBasket = Boolean(packageInBasket(featPkg.id));
+    const currency = featPkg.currency || state.store?.currency || "USD";
+    const priceStr = money(featPkg.total_price ?? featPkg.base_price, currency);
+
+    const btnHtml = inBasket
+      ? `<button type="button" class="btn-purchase is-in-cart" data-open-cart style="min-width: 170px;">
+           <i class="fas fa-check"></i> In Cart
+         </button>`
+      : `<button type="button" class="btn-purchase" data-add="${featPkg.id}" style="min-width: 170px;">
+           <i class="fas fa-shopping-cart"></i> Add to Cart
+         </button>`;
+
+    return `
+      <section class="featured-section">
+        <div class="featured-card">
+          <div class="featured-badge"><span class="site-beacon"></span> FEATURED DEAL &bull; BEST VALUE</div>
+          <div class="featured-inner">
+            <div class="featured-img-wrap" data-info="${featPkg.id}">
+              <img src="${featPkg.image || 'https://dunb17ur4ymx4.cloudfront.net/packages/images/49b8bbfe7956a67c08114a55a94b659699cac845.gif'}" alt="${escapeHtml(featPkg.name)}" />
+            </div>
+            <div class="featured-details">
+              <h2 data-info="${featPkg.id}">${escapeHtml(featPkg.name)} Bundle</h2>
+              <p>Gold is the premium currency on Arcturus for upgrading yourself and unlocking special faction items, ranks, and server-wide pinatas.</p>
+              <div class="featured-price">${priceStr} <span class="featured-discount text-accent">+ MAXIMUM VALUE</span></div>
+            </div>
+            <div class="featured-action">
+              ${btnHtml}
+            </div>
+          </div>
+        </div>
+      </section>
     `;
   }
 
@@ -550,9 +579,8 @@
           <form data-login-form>
             <input type="text" name="ign" class="hud-input" placeholder="Minecraft Username (e.g. Notch)" required autofocus autocomplete="username" />
             <div style="margin-top: 1.25rem;">
-              <button type="submit" class="btn-dual-deck">
-                <span class="deck-main"><i class="fas fa-sign-in-alt"></i> Login & Continue</span>
-                <span class="deck-sub">Connect to Tebex session</span>
+              <button type="submit" class="btn-purchase">
+                <i class="fas fa-sign-in-alt"></i> Login & Continue
               </button>
             </div>
           </form>
@@ -566,9 +594,8 @@
         <div class="complete-panel">
           <h2><i class="fas fa-check-circle text-primary"></i> Order Confirmed</h2>
           <p>Thank you for supporting Arcturus Factions! Your order is being processed and will be delivered to your account in-game shortly.</p>
-          <a href="/" data-route="home" class="btn-dual-deck" style="max-width: 280px; margin: 0 auto;">
-            <span class="deck-main"><i class="fas fa-store"></i> Return to Store</span>
-            <span class="deck-sub">Continue browsing</span>
+          <a href="/" data-route="home" class="btn-purchase" style="max-width: 260px; margin: 0 auto; text-decoration: none;">
+            <i class="fas fa-store"></i> Return to Store
           </a>
         </div>
       `;
@@ -585,20 +612,11 @@
       return;
     }
 
-    // Home view: Intro panel + all categories
-    const rawIntro = state.store?.description || "<p>Welcome to the Arcturus store.</p>";
-    const sanitizedIntro = sanitizeContent(rawIntro);
-
+    // Home view: Featured package + all categories (NO "welcome to the store" banner!)
+    const featuredHtml = renderFeaturedPackage();
     const sections = state.categories.map((c) => renderCategorySection(c)).join("");
     els.content.innerHTML = `
-      <div class="hud-panel" style="margin-bottom: 2.5rem;">
-        <div class="hud-panel-header">
-          <h3><i class="fas fa-bullhorn text-accent"></i> Welcome to the Store</h3>
-        </div>
-        <div class="hud-panel-body" style="font-size: 1rem;">
-          ${sanitizedIntro}
-        </div>
-      </div>
+      ${featuredHtml}
       ${sections}
     `;
   }
@@ -658,7 +676,7 @@
       return;
     }
 
-    // Package info modal
+    // Package info modal via data-info (image or title)
     const info = event.target.closest("[data-info]");
     if (info) {
       event.preventDefault();
@@ -717,19 +735,26 @@
       return;
     }
 
-    // Copy IP (Header or Sidebar)
-    const copyBtn = event.target.closest("#serverLink, #sidebarCopyBtn");
+    // Sidebar Copy IP (Exact Main Page Behavior)
+    const copyBtn = event.target.closest("#sidebarCopyBtn");
     if (copyBtn) {
       event.preventDefault();
       copyText(CONFIG.server);
-      const sub = $("#sidebarCopySub");
+      copyBtn.classList.add("is-copied");
+      const icon = $("#copyBtnIcon");
+      const sub = $("#copyBtnSub");
+      if (icon) {
+        icon.className = "fas fa-check";
+      }
       if (sub) {
         sub.textContent = "Copied to clipboard!";
-        window.clearTimeout(copyBtn.timer);
-        copyBtn.timer = window.setTimeout(() => {
-          sub.textContent = "Click to copy";
-        }, 2200);
       }
+      window.clearTimeout(copyBtn.timer);
+      copyBtn.timer = window.setTimeout(() => {
+        copyBtn.classList.remove("is-copied");
+        if (icon) icon.className = "fas fa-copy";
+        if (sub) sub.textContent = "Click to copy IP";
+      }, 2200);
       showAlert("Server IP copied to clipboard: " + CONFIG.server);
       return;
     }
@@ -757,21 +782,10 @@
     }
   }
 
-  async function loadCounts() {
-    try {
-      const ping = await fetch(`https://api.minetools.eu/ping/${CONFIG.server}/25565`).then((res) => res.json());
-      if (Number.isFinite(ping?.players?.online)) {
-        els.serverCount.textContent = String(ping.players.online);
-      }
-    } catch {
-      /* optional ping */
-    }
-  }
-
   async function start() {
     els.alert = $("#storeAlert");
     els.alertText = $("#storeAlertText");
-    els.categoryNav = $("#categoryNav");
+    els.categoryNav = $("#headerCategoryNav");
     els.headerCartSlot = $("#header-cart-slot");
     els.content = $("#content");
     els.cartDrawer = $("#cartDrawer");
@@ -783,7 +797,6 @@
     els.cartTotalAmount = $("#cartTotalAmount");
     els.modalOverlay = $("#packageModal");
     els.modalContainer = $("#packageModalContainer");
-    els.serverCount = $("#serverCount");
 
     const year = $("#copyrightYear");
     if (year) year.textContent = String(new Date().getFullYear());
@@ -803,7 +816,7 @@
     state.categoryId = route.categoryId || null;
 
     try {
-      await Promise.all([loadCatalog(), loadBasket(), loadCounts()]);
+      await Promise.all([loadCatalog(), loadBasket()]);
       if (state.view === "complete") {
         localStorage.removeItem(CONFIG.storageKey);
         state.basket = null;

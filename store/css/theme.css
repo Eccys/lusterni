@@ -4,12 +4,12 @@
    1. Cyber-Tactical Typography (Black Ops One & Chakra Petch)
    2. Deep-Void Surface with Electric Cyan & Faction Amber Accents
    3. Rigid Geometric Precision & Minimalist Edge Radii (4px)
-   4. Atmospheric Cyber Grid, Scanlines & Ambient Glows
+   4. Atmospheric Cyber Grid & Ambient Glows
    5. Technical Modular HUD Card Architecture
    6. Dual-Deck Action Buttons with Kinetic HUD Feedback
    ========================================================================== */
 
-/* Font Face Definitions */
+/* Local Font Face Definitions */
 @font-face {
   font-family: "Black Ops One";
   font-style: normal;
@@ -105,32 +105,12 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Atmospheric Grid & Scanlines */
+/* Atmospheric Grid */
 .grid-texture {
   background-image:
     linear-gradient(color-mix(in oklab, var(--primary) 5%, transparent) 1px, transparent 1px),
     linear-gradient(90deg, color-mix(in oklab, var(--primary) 5%, transparent) 1px, transparent 1px);
   background-size: 32px 32px;
-}
-
-.site-scanline {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  pointer-events: none;
-  background: color-mix(in oklab, var(--primary) 40%, transparent);
-  box-shadow: 0 0 18px var(--primary);
-  animation: scanline 8s linear infinite;
-  z-index: 10;
-}
-
-@keyframes scanline {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(100vh);
-  }
 }
 
 @keyframes beacon {
@@ -159,7 +139,6 @@ body {
   font-family: var(--font-display);
 }
 
-/* Utilities */
 .text-primary { color: var(--primary) !important; }
 .text-accent { color: var(--accent) !important; }
 .text-muted { color: var(--muted-foreground) !important; }
@@ -178,7 +157,7 @@ body {
 }
 
 /* ==========================================================================
-   SITE HEADER & NAVIGATION
+   SITE HEADER & CENTERED NAVIGATION
    ========================================================================== */
 .site-header {
   position: sticky;
@@ -191,6 +170,7 @@ body {
 }
 
 .site-header-inner {
+  position: relative;
   display: flex;
   height: 4.25rem;
   align-items: center;
@@ -206,270 +186,79 @@ body {
   text-decoration: none;
   font-weight: 700;
   font-size: 1.125rem;
+  z-index: 2;
 }
 
-.site-brand-mark {
-  display: grid;
+.site-brand-logo {
   width: 2.25rem;
   height: 2.25rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid color-mix(in oklab, var(--primary) 60%, transparent);
-  background: color-mix(in oklab, var(--primary) 12%, transparent);
-  color: var(--primary);
-  font-family: var(--font-display);
-  font-size: 1rem;
-  border-radius: var(--radius);
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }
 
-.site-brand:hover .site-brand-mark {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
+.site-brand:hover .site-brand-logo {
+  transform: scale(1.08);
 }
 
 .site-brand-text {
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  font-size: 1.15rem;
+}
+
+/* CENTERED DESKTOP NAVIGATION */
+.site-desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .site-desktop-nav {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    margin: 0;
+  }
+}
+
+.site-desktop-nav a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.site-desktop-nav a:hover,
+.site-desktop-nav a.active {
+  color: var(--primary);
+}
+
+.site-desktop-nav a.active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
 }
 
 .site-header-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-/* Header HUD Button (Server IP) */
-.site-hud-button {
-  display: none;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.45rem 0.85rem;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
-}
-
-@media (min-width: 768px) {
-  .site-hud-button {
-    display: flex;
-  }
-}
-
-.site-hud-button:hover {
-  border-color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 10%, transparent);
-  transform: translateY(-1px);
-}
-
-.site-hud-button .hud-label {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.site-hud-button .hud-sub {
-  font-size: 0.65rem;
-  color: var(--primary);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  margin-top: 0.1rem;
-}
-
-/* Secondary Nav Bar (Categories) */
-.site-category-nav {
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
-  background: color-mix(in oklab, var(--card) 45%, transparent);
-  backdrop-filter: blur(12px);
-}
-
-.category-nav-list {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding: 0.5rem 0;
-  scrollbar-width: none;
-}
-
-.category-nav-list::-webkit-scrollbar {
-  display: none;
-}
-
-.category-nav-list li a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.95rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  color: var(--muted-foreground);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.825rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.category-nav-list li a:hover {
-  color: var(--primary);
-  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
-  background: color-mix(in oklab, var(--primary) 8%, transparent);
-}
-
-.category-nav-list li.active a {
-  color: var(--primary-foreground);
-  background: var(--primary);
-  border-color: var(--primary);
-  font-weight: 700;
-}
-
-/* ==========================================================================
-   TACTICAL BUTTONS (Standard & Dual-Deck)
-   ========================================================================== */
-.site-button {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  border-radius: var(--radius);
-  padding: 0.65rem 1.25rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  line-height: 1;
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.site-button-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-height: 2.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: color-mix(in oklab, var(--background) 70%, transparent);
-  color: var(--foreground);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.site-button-outline:hover {
-  border-color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 12%, transparent);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
-/* SIGNATURE DUAL-DECK BUTTON */
-.btn-dual-deck {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: var(--primary-foreground);
-  text-decoration: none;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.2s ease;
-}
-
-.btn-dual-deck:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px -2px color-mix(in oklab, var(--primary) 35%, transparent);
-}
-
-.btn-dual-deck:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.btn-dual-deck .deck-main {
-  display: flex;
-  height: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0 1.25rem;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.btn-dual-deck .deck-sub {
-  display: flex;
-  height: 1.25rem;
-  align-items: center;
-  justify-content: center;
-  background: var(--deep-accent);
-  color: var(--primary-foreground);
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.95;
-  transition: background-color 0.2s ease;
-}
-
-.btn-dual-deck:hover .deck-sub {
-  background: color-mix(in oklab, var(--deep-accent) 85%, black);
-}
-
-/* Gold Variant of Dual-Deck Button */
-.btn-dual-deck--gold {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-
-.btn-dual-deck--gold:hover {
-  box-shadow: 0 4px 16px -2px color-mix(in oklab, var(--accent) 35%, transparent);
-}
-
-.btn-dual-deck--gold .deck-sub {
-  background: oklch(0.5 0.15 53);
-  color: var(--accent-foreground);
-}
-
-/* In-Cart State */
-.btn-dual-deck--active {
-  border-color: var(--accent);
-  background: color-mix(in oklab, var(--card) 90%, transparent);
-  color: var(--accent);
-}
-
-.btn-dual-deck--active .deck-sub {
-  background: color-mix(in oklab, var(--accent) 20%, transparent);
-  color: var(--accent);
+  z-index: 2;
 }
 
 /* Header Cart Button */
@@ -532,6 +321,212 @@ body {
 }
 
 /* ==========================================================================
+   MAIN PAGE BUTTONS (EXACT STYLING & ANIMATIONS)
+   ========================================================================== */
+/* Copy Server IP Dual-Deck Button */
+.copy-server-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.copy-server-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.copy-server-btn:active {
+  transform: translateY(2px);
+}
+
+.copy-server-btn .copy-main {
+  display: flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+}
+
+.copy-server-btn .copy-main i {
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.copy-server-btn.is-copied .copy-main i {
+  transform: scale(1.15);
+}
+
+.copy-server-btn .copy-sub {
+  display: flex;
+  height: 1.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: var(--deep-accent);
+  padding: 0 0.75rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: color-mix(in oklab, var(--primary-foreground) 90%, transparent);
+  transition: background-color 0.2s ease;
+}
+
+.copy-server-btn:hover .copy-sub {
+  background: color-mix(in oklab, var(--deep-accent) 85%, black);
+}
+
+/* Discord Button (Matching Main Page) */
+.site-discord-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--background) 70%, transparent);
+  color: var(--foreground);
+  backdrop-filter: blur(8px);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.65rem 1.75rem;
+  transition: all 0.2s ease;
+}
+
+.site-discord-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.site-discord-btn:active {
+  transform: scale(0.95);
+}
+
+/* Standard Outline Button */
+.site-button-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--background) 70%, transparent);
+  color: var(--foreground);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.site-button-outline:hover {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   PACKAGE PURCHASE BUTTON (NO BORDER RADIUS, NO SUB-DECK, NO DARK OUTLINE)
+   ========================================================================== */
+.btn-purchase {
+  width: 100%;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0 !important;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  box-shadow: none;
+}
+
+.btn-purchase:hover {
+  background: color-mix(in oklab, var(--primary) 85%, white);
+  border-color: color-mix(in oklab, var(--primary) 85%, white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px -2px color-mix(in oklab, var(--primary) 40%, transparent);
+}
+
+.btn-purchase:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-purchase.is-in-cart {
+  border-radius: 0 !important;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn-purchase.is-in-cart:hover {
+  background: color-mix(in oklab, var(--accent) 85%, white);
+  border-color: color-mix(in oklab, var(--accent) 85%, white);
+}
+
+/* Checkout Button in Drawer */
+.btn-checkout {
+  width: 100%;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0 !important;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-checkout:hover {
+  background: color-mix(in oklab, var(--accent) 85%, white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px -2px color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+/* ==========================================================================
    HERO / BANNER SECTION
    ========================================================================== */
 .store-hero {
@@ -563,7 +558,7 @@ body {
 }
 
 .site-hero-tagline {
-  max-width: 38rem;
+  max-width: 44rem;
   margin-top: 1.15rem;
   border-left: 2px solid var(--accent);
   padding-left: 0.85rem;
@@ -647,7 +642,99 @@ body {
 }
 
 /* ==========================================================================
-   TACTICAL PACKAGE BENTO CARDS
+   FEATURED PACKAGE SECTION
+   ========================================================================== */
+.featured-section {
+  margin-bottom: 3rem;
+}
+
+.featured-card {
+  position: relative;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 10%, var(--card)) 0%, var(--card) 100%);
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px -8px color-mix(in oklab, var(--accent) 25%, transparent);
+}
+
+.featured-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.featured-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .featured-inner {
+    grid-template-columns: 120px 1fr auto;
+  }
+}
+
+.featured-img-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+}
+
+.featured-img-wrap img {
+  max-height: 90px;
+  max-width: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.featured-img-wrap:hover img {
+  transform: scale(1.1);
+}
+
+.featured-details h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--foreground);
+  transition: color 0.2s ease;
+}
+
+.featured-details h2:hover {
+  color: var(--primary);
+}
+
+.featured-details p {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  margin-top: 0.35rem;
+  line-height: 1.5;
+}
+
+.featured-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: 0.5rem;
+}
+
+.featured-discount {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+}
+
+/* ==========================================================================
+   TACTICAL PACKAGE BENTO CARDS (4 COLUMNS ON DESKTOP)
    ========================================================================== */
 .category-section {
   margin-bottom: 3.5rem;
@@ -676,10 +763,23 @@ body {
   max-width: 48rem;
 }
 
+/* EXACT 4 COLUMNS ON DESKTOP */
 .package-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1.25rem;
+}
+
+@media (min-width: 580px) {
+  .package-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .package-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .package-card {
@@ -705,7 +805,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .package-index {
@@ -715,41 +815,23 @@ body {
   width: 1.85rem;
   height: 1.85rem;
   border-radius: var(--radius-sm);
-  background: color-mix(in oklab, var(--primary) 10%, transparent);
-  border: 1px solid color-mix(in oklab, var(--primary) 25%, transparent);
-  color: var(--primary);
-  font-family: var(--font-display, monospace);
+  background: color-mix(in oklab, var(--card) 90%, transparent);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 700;
 }
 
-.package-info-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.85rem;
-  height: 1.85rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.package-info-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 10%, transparent);
-}
-
+/* Clickable Image & Title */
 .package-image-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 7.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .package-image-wrap img {
@@ -760,7 +842,7 @@ body {
 }
 
 .package-card:hover .package-image-wrap img {
-  transform: scale(1.08);
+  transform: scale(1.1);
 }
 
 .package-card-body {
@@ -771,16 +853,22 @@ body {
 
 .package-card-title {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--foreground);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
   line-height: 1.2;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.package-card-title:hover {
+  color: var(--primary);
 }
 
 .package-card-price {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -797,9 +885,8 @@ body {
   align-items: center;
   justify-content: space-between;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   background: color-mix(in oklab, var(--card) 90%, transparent);
-  height: 2.5rem;
+  height: 2.75rem;
   padding: 0 0.25rem;
 }
 
@@ -807,14 +894,13 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border: none;
   background: transparent;
   color: var(--foreground);
   font-weight: 700;
   cursor: pointer;
-  border-radius: var(--radius-sm);
   transition: all 0.15s ease;
 }
 
@@ -825,8 +911,8 @@ body {
 
 .quantity-display {
   font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--foreground);
+  font-size: 0.85rem;
+  color: var(--accent);
 }
 
 /* ==========================================================================

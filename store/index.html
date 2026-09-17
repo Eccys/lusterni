@@ -18,48 +18,28 @@
     <meta property="og:image" content="https://www.arcturusmc.org/images/og-image.webp" />
   </head>
   <body class="grid-texture">
-    <div class="site-scanline" aria-hidden="true"></div>
-
     <!-- SITE HEADER -->
     <header class="site-header">
       <div class="container">
         <div class="site-header-inner">
-          <a href="https://www.arcturusmc.org/" class="site-brand">
-            <span class="site-brand-mark">Ac</span>
-            <span class="site-brand-text">Arcturus <span class="text-accent">Store</span></span>
+          <!-- Left: Logo & Brand -->
+          <a href="https://www.arcturusmc.org/" class="site-brand" aria-label="Arcturus Home">
+            <img src="/assets/logo.png" alt="Arcturus Reborn" class="site-brand-logo" />
+            <span class="site-brand-text">Arcturus <span class="text-primary">Reborn</span></span>
           </a>
 
+          <!-- Center: Category Navigation -->
+          <nav class="site-desktop-nav" id="headerCategoryNav" aria-label="Store navigation">
+            <!-- Injected via JavaScript -->
+          </nav>
+
+          <!-- Right: Cart / Login Slot -->
           <div class="site-header-actions">
-            <!-- Server IP Copy Button -->
-            <button type="button" class="site-hud-button" id="serverLink" title="Click to copy server IP">
-              <span class="hud-label">
-                <span class="site-beacon" aria-hidden="true"></span>
-                play.arcturusmc.org
-              </span>
-              <span class="hud-sub"><span id="serverCount">0</span> PLAYERS ONLINE &bull; CLICK TO COPY</span>
-            </button>
-
-            <!-- Discord Link -->
-            <a href="https://discord.gg/DTR6serkeM" target="_blank" rel="noopener" class="site-button-outline">
-              <i class="fab fa-discord text-primary"></i>
-              <span>Discord</span>
-            </a>
-
-            <!-- Cart Trigger Slot -->
             <div id="header-cart-slot"></div>
           </div>
         </div>
       </div>
     </header>
-
-    <!-- CATEGORY NAVIGATION -->
-    <nav class="site-category-nav">
-      <div class="container">
-        <ul class="category-nav-list" id="categoryNav">
-          <li class="active"><a href="/" data-route="home"><i class="fas fa-home"></i> Home</a></li>
-        </ul>
-      </div>
-    </nav>
 
     <!-- HERO BANNER -->
     <section class="store-hero">
@@ -72,7 +52,7 @@
           Store <span class="text-primary">& Perks</span>
         </h1>
         <p class="site-hero-tagline">
-          Acquire Gold, crate keys, and rank perks to power your faction and dominate the battlefield.
+          Here you can buy Crate Keys, Ranks, and Pinatas for the whole server! In case you need support, you can join the discord server <a href="https://discord.gg/DTR6serkeM" target="_blank" rel="noopener" style="color: var(--primary); text-decoration: underline;">here</a> and make a ticket for support.
         </p>
       </div>
     </section>
@@ -82,49 +62,73 @@
       <div class="store-layout">
         <!-- SIDEBAR -->
         <aside class="store-sidebar">
-          <!-- Server Status Module -->
+          <!-- Server Status Module (with exact main page copy button) -->
           <div class="hud-panel">
             <div class="hud-panel-header">
-              <h3><i class="fas fa-server"></i> Server Info</h3>
+              <h3><i class="fas fa-server text-primary"></i> Server Info</h3>
               <span class="hud-status-badge"><span class="site-beacon"></span> Live</span>
             </div>
             <div class="hud-panel-body">
               <p><strong>IP:</strong> play.arcturusmc.org</p>
               <p class="text-muted">Supports 1.8+ Java and Bedrock. Cracked clients welcome.</p>
               <div style="margin-top: 1rem;">
-                <button type="button" class="btn-dual-deck" id="sidebarCopyBtn">
-                  <span class="deck-main"><i class="fas fa-copy"></i> Copy Server IP</span>
-                  <span class="deck-sub" id="sidebarCopySub">Click to copy</span>
+                <button type="button" class="copy-server-btn" id="sidebarCopyBtn" aria-label="Copy server IP">
+                  <div class="copy-main">
+                    <i class="fas fa-copy" id="copyBtnIcon"></i>
+                    <span id="copyBtnLabel">play.arcturusmc.org</span>
+                  </div>
+                  <div class="copy-sub" id="copyBtnSub">
+                    Click to copy IP
+                  </div>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Help / Support Module -->
+          <!-- Join Discord Module (with exact main page styling and animations) -->
           <div class="hud-panel">
             <div class="hud-panel-header">
-              <h3><i class="fas fa-headset"></i> Need Help?</h3>
+              <h3><i class="fab fa-discord text-primary"></i> Community</h3>
             </div>
             <div class="hud-panel-body">
               <p>Purchases usually deliver within 1-5 minutes in-game.</p>
-              <p>If you encounter any issues, open a ticket on our Discord server.</p>
+              <p class="text-muted">Need assistance or have questions? Join our Discord community.</p>
               <div style="margin-top: 1rem;">
-                <a href="https://discord.gg/DTR6serkeM" target="_blank" rel="noopener" class="site-button-outline" style="width: 100%; justify-content: center;">
-                  <i class="fab fa-discord"></i> Join Discord
+                <a href="https://discord.gg/DTR6serkeM" target="_blank" rel="noopener" class="site-discord-btn">
+                  <i class="fab fa-discord text-primary"></i> Join Discord
                 </a>
               </div>
             </div>
           </div>
 
-          <!-- Security Badge -->
+          <!-- Vote Module (Replacing Payments) -->
           <div class="hud-panel">
             <div class="hud-panel-header">
-              <h3><i class="fas fa-shield-alt"></i> Payments</h3>
+              <h3><i class="fas fa-vote-yea text-primary"></i> Vote & Rewards</h3>
             </div>
             <div class="hud-panel-body">
-              <p class="text-muted" style="font-size: 0.8rem;">
-                Payments are securely processed by <strong>Tebex</strong>. All major credit cards, PayPal, and local payment methods are accepted.
-              </p>
+              <p>Vote for Arcturus every 24 hours to earn free in-game keys, claim blocks, and server rewards.</p>
+              <div style="margin-top: 1rem;">
+                <a href="https://www.arcturusmc.org/vote" class="site-discord-btn">
+                  <i class="fas fa-external-link-alt text-primary"></i> Vote for Arcturus
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Donator Module -->
+          <div class="hud-panel">
+            <div class="hud-panel-header">
+              <h3><i class="fas fa-star text-accent"></i> Top Donator</h3>
+              <span class="hud-status-badge">This Month</span>
+            </div>
+            <div class="hud-panel-body" style="text-align: center;">
+              <div style="display: flex; justify-content: center; margin-bottom: 0.75rem;">
+                <img src="https://mc-heads.net/body/Eccys/left" alt="Top Donator" style="height: 105px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));" />
+              </div>
+              <p style="font-weight: 700; font-size: 1rem; color: var(--primary); margin: 0;">Eccys</p>
+              <p class="text-muted" style="font-size: 0.75rem; margin-top: 0.25rem;">Leading supporter of the month</p>
+              <p style="font-size: 0.75rem; color: var(--accent); margin-top: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Support to claim #1!</p>
             </div>
           </div>
         </aside>
@@ -192,9 +196,8 @@
           <span class="cart-total-label">Total</span>
           <span class="cart-total-amount" id="cartTotalAmount">0.00 USD</span>
         </div>
-        <button type="button" class="btn-dual-deck btn-dual-deck--gold" id="cartCheckoutBtn">
-          <span class="deck-main"><i class="fas fa-lock"></i> Checkout Now</span>
-          <span class="deck-sub">Secured by Tebex</span>
+        <button type="button" class="btn-checkout" id="cartCheckoutBtn">
+          <i class="fas fa-lock"></i> Checkout Now
         </button>
       </div>
     </aside>
