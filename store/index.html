@@ -5,153 +5,213 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Arcturus Factions | Store</title>
-    <meta name="description" content="Buy Gold and crate keys for ArcturusMC. Checkout is handled by Tebex." />
-    <link rel="canonical" href="https://www.arcturusmc.org/store/" />
+    <meta name="description" content="Official Arcturus Factions Store. Buy Gold, crate keys, and perks. Powered by Tebex." />
+    <link rel="canonical" href="https://store.arcturusmc.org/" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@1,900&family=Rubik:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/extra.css" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.arcturusmc.org/store/" />
+    <meta property="og:url" content="https://store.arcturusmc.org/" />
     <meta property="og:title" content="Arcturus Factions Store" />
-    <meta property="og:description" content="Buy Gold and crate keys for ArcturusMC." />
+    <meta property="og:description" content="Official Arcturus Factions Store. Buy Gold, crate keys, and perks." />
     <meta property="og:image" content="https://www.arcturusmc.org/images/og-image.webp" />
   </head>
-  <body>
-    <header>
-      <div class="header__socialWrapper">
-        <div class="container">
-          <ul class="nav--secondary">
-            <li>
-              <a href="https://discord.gg/DTR6serkeM" class="iconBoxed" target="_blank" rel="noopener" aria-label="Discord">
-                <svg role="img" aria-label="discord icon"><use xlink:href="#discord"></use></svg>
-              </a>
-            </li>
-          </ul>
-          <a href="https://www.arcturusmc.org/" class="text--title"><i class="fas fa-chevron-left"></i>Back To Website</a>
-        </div>
-      </div>
+  <body class="grid-texture">
+    <div class="site-scanline" aria-hidden="true"></div>
 
-      <div class="header__logoWrapper">
-        <div class="container">
-          <button class="header__server header__externalLink" id="serverLink" type="button">
-            <div>
-              <h2 class="text--title" id="serverText" data-ip="play.arcturusmc.org">play.arcturusmc.org</h2>
-              <p>Join <span id="serverCount">0</span> other people!</p>
-            </div>
-            <div class="iconBoxed">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M4,2H20a2,2,0,0,1,2,2V20a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V4A2,2,0,0,1,4,2M6,6v4h4v2H8v6h2V16h4v2h2V12H14V10h4V6H14v4H10V6Z" fill="#fff" />
-              </svg>
-            </div>
-          </button>
-          <a href="/store/" class="header__logo" data-route="home">
-            <img id="store-logo" class="unselectable" src="/assets/logo.png" alt="Arcturus Factions" />
+    <!-- SITE HEADER -->
+    <header class="site-header">
+      <div class="container">
+        <div class="site-header-inner">
+          <a href="https://www.arcturusmc.org/" class="site-brand">
+            <span class="site-brand-mark">Ac</span>
+            <span class="site-brand-text">Arcturus <span class="text-accent">Store</span></span>
           </a>
-          <a href="https://discord.gg/DTR6serkeM" class="header__discord header__externalLink" id="discordLink" target="_blank" rel="noopener">
-            <div class="iconBoxed">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M20.33,4.428A19.849,19.849,0,0,0,15.379,2.905a13.6,13.6,0,0,0-.634,1.289,18.439,18.439,0,0,0-5.5,0A13.661,13.661,0,0,0,8.615,2.905,19.989,19.989,0,0,0,3.66,4.432,20,20,0,0,0,.1,18.046h0A19.958,19.958,0,0,0,6.175,21.095a14.667,14.667,0,0,0,1.3-2.1,12.915,12.915,0,0,1-2.048-.978c.172-.125.34-.253.5-.378a14.265,14.265,0,0,0,12.142,0c.164.134.332.262.5.378a12.965,12.965,0,0,1-2.052.98,14.534,14.534,0,0,0,1.3,2.1A19.868,19.868,0,0,0,23.9,18.048h0A19.993,19.993,0,0,0,20.33,4.428ZM8.013,15.305A2.3,2.3,0,0,1,5.852,12.905,2.281,2.281,0,0,1,8.009,10.505,2.272,2.272,0,0,1,10.173,12.905,2.292,2.292,0,0,1,8.013,15.305Zm7.974,0a2.292,2.292,0,0,1-2.16-2.4,2.281,2.281,0,0,1,2.16-2.4A2.266,2.266,0,0,1,18.144,12.905,2.291,2.291,0,0,1,15.987,15.305Z" fill="#fff" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="text--title">Discord</h2>
-              <p>Join <span id="discordCount">0</span> other people!</p>
-            </div>
-          </a>
-          <img id="store-logo-blur" class="header__logoBlurred unselectable" src="/assets/logo.png" alt="" />
-          <button class="header__mobileMenu btn btn--dark" type="button" data-open-nav>
-            <span class="text--title">MENU</span><i class="fas fa-bars"></i>
-          </button>
-        </div>
-      </div>
 
-      <div class="header__navWrapper">
-        <div class="container">
-          <ul class="nav menuWrapper" id="nav" data-toggle="nav"></ul>
+          <div class="site-header-actions">
+            <!-- Server IP Copy Button -->
+            <button type="button" class="site-hud-button" id="serverLink" title="Click to copy server IP">
+              <span class="hud-label">
+                <span class="site-beacon" aria-hidden="true"></span>
+                play.arcturusmc.org
+              </span>
+              <span class="hud-sub"><span id="serverCount">0</span> PLAYERS ONLINE &bull; CLICK TO COPY</span>
+            </button>
+
+            <!-- Discord Link -->
+            <a href="https://discord.gg/DTR6serkeM" target="_blank" rel="noopener" class="site-button-outline">
+              <i class="fab fa-discord text-primary"></i>
+              <span>Discord</span>
+            </a>
+
+            <!-- Cart Trigger Slot -->
+            <div id="header-cart-slot"></div>
+          </div>
         </div>
       </div>
     </header>
 
-    <div class="basket menuWrapper" data-toggle="basket">
-      <div class="basket__buttons">
-        <button class="basket__close iconBoxed iconBoxed--rounded btn--dark cursorAura cursorAura--dim" type="button" data-close-basket>
-          <i class="fas fa-chevron-right"></i>
-        </button>
-        <span class="btn btn--dark">USD</span>
-        <button type="button" class="btn btn--dark cursorAura--dim btn--hideMobile" data-logout>Logout</button>
-        <button type="button" class="btn btn--dark iconBoxed iconBoxed--rounded btn--showMobile" data-logout><i class="fas fa-sign-out-alt"></i></button>
-      </div>
-      <div class="basket__cart">
-        <div class="cart__info">
-          <h2>Your Cart</h2>
-          <p id="basket-summary">No items in cart!</p>
-          <span class="tag tag--left tag--light" id="basket-username">Guest</span>
-        </div>
-        <div class="cart__player"><img id="basket-player" src="" class="unselectable" alt="" /></div>
-      </div>
-      <div class="basket__items" id="basket-items"></div>
-      <div class="basket__total">
-        <div>
-          <h3>Total</h3>
-          <h2 id="basket-total">0.00 USD</h2>
-        </div>
-        <button type="button" class="btn btn--primary cursorAura" data-checkout>Checkout</button>
-      </div>
-    </div>
-
-    <main>
+    <!-- CATEGORY NAVIGATION -->
+    <nav class="site-category-nav">
       <div class="container">
-        <div class="notification">
-          <div id="store-alert" class="alert"></div>
-        </div>
-        <div class="body body--home">
-          <div>
-            <div class="sidebar" id="sidebar"></div>
-          </div>
-          <div class="content" id="content">
-            <div class="panel">
-              <div class="panel__heading"><h1>Loading store</h1></div>
-              <div class="panel__body">Fetching the live Tebex catalog…</div>
+        <ul class="category-nav-list" id="categoryNav">
+          <li class="active"><a href="/" data-route="home"><i class="fas fa-home"></i> Home</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- HERO BANNER -->
+    <section class="store-hero">
+      <div class="container">
+        <p class="site-eyebrow">
+          <span class="site-beacon" aria-hidden="true"></span>
+          Official Arcturus Store
+        </p>
+        <h1 class="store-hero-title">
+          Store <span class="text-primary">& Perks</span>
+        </h1>
+        <p class="site-hero-tagline">
+          Acquire Gold, crate keys, and rank perks to power your faction and dominate the battlefield.
+        </p>
+      </div>
+    </section>
+
+    <!-- MAIN STORE SECTION -->
+    <main class="container">
+      <div class="store-layout">
+        <!-- SIDEBAR -->
+        <aside class="store-sidebar">
+          <!-- Server Status Module -->
+          <div class="hud-panel">
+            <div class="hud-panel-header">
+              <h3><i class="fas fa-server"></i> Server Info</h3>
+              <span class="hud-status-badge"><span class="site-beacon"></span> Live</span>
+            </div>
+            <div class="hud-panel-body">
+              <p><strong>IP:</strong> play.arcturusmc.org</p>
+              <p class="text-muted">Supports 1.8+ Java and Bedrock. Cracked clients welcome.</p>
+              <div style="margin-top: 1rem;">
+                <button type="button" class="btn-dual-deck" id="sidebarCopyBtn">
+                  <span class="deck-main"><i class="fas fa-copy"></i> Copy Server IP</span>
+                  <span class="deck-sub" id="sidebarCopySub">Click to copy</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+
+          <!-- Help / Support Module -->
+          <div class="hud-panel">
+            <div class="hud-panel-header">
+              <h3><i class="fas fa-headset"></i> Need Help?</h3>
+            </div>
+            <div class="hud-panel-body">
+              <p>Purchases usually deliver within 1-5 minutes in-game.</p>
+              <p>If you encounter any issues, open a ticket on our Discord server.</p>
+              <div style="margin-top: 1rem;">
+                <a href="https://discord.gg/DTR6serkeM" target="_blank" rel="noopener" class="site-button-outline" style="width: 100%; justify-content: center;">
+                  <i class="fab fa-discord"></i> Join Discord
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Badge -->
+          <div class="hud-panel">
+            <div class="hud-panel-header">
+              <h3><i class="fas fa-shield-alt"></i> Payments</h3>
+            </div>
+            <div class="hud-panel-body">
+              <p class="text-muted" style="font-size: 0.8rem;">
+                Payments are securely processed by <strong>Tebex</strong>. All major credit cards, PayPal, and local payment methods are accepted.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <!-- CONTENT AREA -->
+        <section class="store-content" id="content">
+          <div class="hud-panel">
+            <div class="hud-panel-header">
+              <h2><i class="fas fa-spinner fa-spin text-primary"></i> Loading Store</h2>
+            </div>
+            <div class="hud-panel-body">
+              <p>Connecting to Tebex live catalog...</p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
-    <footer>
+    <!-- FOOTER -->
+    <footer class="site-footer">
       <div class="container">
-        <div>
-          <h3>&copy; Arcturus Factions <span id="copyrightYear"></span></h3>
-          <p>We are not affiliated with Mojang AB.</p>
-        </div>
-        <div>
-          <p>
-            <a href="https://checkout.tebex.io/terms/checkout" target="_blank" rel="noopener">Terms</a> |
+        <div class="site-footer-inner">
+          <div>
+            <p>&copy; Arcturus Factions <span id="copyrightYear">2026</span>. All rights reserved.</p>
+            <p style="font-size: 0.75rem; margin-top: 0.35rem;">We are not affiliated with Mojang AB or Microsoft.</p>
+          </div>
+          <div style="display: flex; gap: 1.25rem; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">
+            <a href="https://checkout.tebex.io/terms/checkout" target="_blank" rel="noopener">Terms</a>
             <a href="https://checkout.tebex.io/terms/privacy" target="_blank" rel="noopener">Privacy</a>
-          </p>
-          <p>Powered by <a href="https://tebex.io">Tebex</a>. Themed by <a href="https://www.mc-market.org/resources/authors/63198/">Gilles</a>.</p>
+            <a href="https://tebex.io" target="_blank" rel="noopener">Powered by Tebex</a>
+          </div>
         </div>
       </div>
     </footer>
 
-    <div class="modal" id="popup-modal"></div>
-    <div class="popup">
-      <h2>Copied to clipboard</h2>
-      <button class="btn btn--primary cursorAura" id="closePopup" type="button">Close</button>
-      <img class="popup__logoBackground unselectable" src="/assets/logo.png" alt="" />
-    </div>
-    <div class="popupBack"></div>
+    <!-- CART FLYOUT DRAWER -->
+    <div class="cart-drawer-overlay" id="cartDrawerOverlay" data-close-drawer></div>
+    <aside class="cart-drawer" id="cartDrawer">
+      <div class="cart-drawer-header">
+        <h2><i class="fas fa-shopping-cart text-accent"></i> Your Cart</h2>
+        <button type="button" class="cart-drawer-close" data-close-drawer aria-label="Close cart">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
-    <svg width="0" height="0" style="display: none">
-      <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="discord">
-        <title>Discord</title>
-        <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"></path>
-      </symbol>
-    </svg>
+      <div class="cart-drawer-user">
+        <img id="cartUserAvatar" src="" class="cart-user-avatar" alt="" style="display: none;" />
+        <div class="cart-user-info">
+          <div class="cart-user-label">Minecraft Username</div>
+          <div class="cart-user-name" id="cartUsername">Guest</div>
+        </div>
+        <button type="button" class="site-button-outline" id="cartLogoutBtn" style="min-height: 2rem; padding: 0.25rem 0.65rem; font-size: 0.7rem; display: none;">Logout</button>
+      </div>
+
+      <div class="cart-drawer-items" id="cartDrawerItems">
+        <div class="cart-empty-state">
+          <i class="fas fa-shopping-basket"></i>
+          <p>Your cart is empty</p>
+          <span style="font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;">Select packages to get started</span>
+        </div>
+      </div>
+
+      <div class="cart-drawer-footer">
+        <div class="cart-total-row">
+          <span class="cart-total-label">Total</span>
+          <span class="cart-total-amount" id="cartTotalAmount">0.00 USD</span>
+        </div>
+        <button type="button" class="btn-dual-deck btn-dual-deck--gold" id="cartCheckoutBtn">
+          <span class="deck-main"><i class="fas fa-lock"></i> Checkout Now</span>
+          <span class="deck-sub">Secured by Tebex</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- PACKAGE DETAILS MODAL -->
+    <div class="modal-overlay" id="packageModal">
+      <div class="hud-modal" id="packageModalContainer">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- SITE ALERT TOAST -->
+    <div class="site-alert site-alert--success" id="storeAlert">
+      <i class="fas fa-check-circle"></i>
+      <span id="storeAlertText">Notification</span>
+    </div>
+
     <script src="js/app.js"></script>
   </body>
 </html>

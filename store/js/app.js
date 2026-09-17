@@ -2,12 +2,9 @@
   const CONFIG = {
     publicToken: "ti29-45ff1ef831c85c765f3d033de1ffa13f7c6c462b",
     apiRoot: "https://headless.tebex.io/api",
-    website: "https://www.arcturusmc.org",
     server: "play.arcturusmc.org",
     discord: "https://discord.gg/DTR6serkeM",
     discordId: "1127553089533120562",
-    completePath: "/store/?checkout=complete",
-    cancelPath: "/store/",
     storageKey: "arcturus.tebex.basket",
   };
 
@@ -34,11 +31,6 @@
     return `${amount.toFixed(2)} ${currency}`;
   }
 
-  function truncate(text, length) {
-    const value = String(text || "");
-    return value.length > length ? `${value.slice(0, length)}` : value;
-  }
-
   function escapeHtml(value) {
     return String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -47,12 +39,23 @@
       .replaceAll('"', "&quot;");
   }
 
+  function sanitizeContent(html) {
+    if (!html) return "";
+    return String(html)
+      .replace(/https?:\/\/arcturusmc\.xyz\/discord/gi, CONFIG.discord)
+      .replace(/arcturusmc\.xyz/gi, "arcturusmc.org");
+  }
+
+  function getBaseStoreUrl() {
+    return `${window.location.origin}/`;
+  }
+
   function completeUrl() {
-    return `${window.location.origin}${CONFIG.completePath}`;
+    return `${window.location.origin}/?checkout=complete`;
   }
 
   function cancelUrl() {
-    return `${window.location.origin}${CONFIG.cancelPath}`;
+    return `${window.location.origin}/`;
   }
 
   async function api(url, options = {}) {
@@ -90,13 +93,14 @@
 
   function showAlert(message, type = "success") {
     const box = els.alert;
-    if (!box) return;
-    box.className = `alert alert--${type} is-visible`;
-    box.innerHTML = `<span>${escapeHtml(message)}</span>`;
+    const text = els.alertText;
+    if (!box || !text) return;
+    box.className = `site-alert site-alert--${type} is-visible`;
+    text.textContent = message;
     window.clearTimeout(showAlert.timer);
     showAlert.timer = window.setTimeout(() => {
       box.classList.remove("is-visible");
-    }, 5000);
+    }, 4500);
   }
 
   function setBusy(busy) {
@@ -133,6 +137,7 @@
     state.view = next.view;
     state.categoryId = next.categoryId || null;
     render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function basketPackages() {
@@ -152,52 +157,29 @@
     return Number(found?.in_basket?.quantity || found?.quantity || 0);
   }
 
-  function manageMenu(action, name) {
-    const target = [...document.querySelectorAll(".menuWrapper")].find((node) => node.dataset.toggle === name);
-    if (!target) return;
-    if (action === "open") target.classList.add("menuWrapper--open");
-    else target.classList.remove("menuWrapper--open");
+  function openCartDrawer() {
+    els.cartDrawer.classList.add("is-open");
+    els.cartDrawerOverlay.classList.add("is-open");
   }
 
-  function toggleDropdown(name) {
-    const target = [...document.querySelectorAll(".dropdownMenu")].find((node) => node.dataset.toggle === name);
-    if (target) target.classList.toggle("dropdownMenu--open");
-  }
-
-  function bindCursorAura() {
-    document.querySelectorAll(".cursorAura").forEach((button) => {
-      button.addEventListener("mousemove", (event) => {
-        const { x, y } = button.getBoundingClientRect();
-        button.style.setProperty("--x", event.clientX - x);
-        button.style.setProperty("--y", event.clientY - y);
-      });
-    });
-  }
-
-  function popupDisplay(show) {
-    els.popup.style.display = show ? "block" : "none";
-    els.popupBack.style.display = show ? "block" : "none";
-  }
-
-  function fallbackCopy(text) {
-    const field = document.createElement("textarea");
-    field.value = text;
-    field.style.position = "fixed";
-    field.style.top = "0";
-    field.style.left = "0";
-    document.body.appendChild(field);
-    field.focus();
-    field.select();
-    document.execCommand("copy");
-    document.body.removeChild(field);
+  function closeCartDrawer() {
+    els.cartDrawer.classList.remove("is-open");
+    els.cartDrawerOverlay.classList.remove("is-open");
   }
 
   function copyText(text) {
-    if (!navigator.clipboard) {
-      fallbackCopy(text);
-      return;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const field = document.createElement("textarea");
+      field.value = text;
+      field.style.position = "fixed";
+      field.style.opacity = "0";
+      document.body.appendChild(field);
+      field.select();
+      document.execCommand("copy");
+      document.body.removeChild(field);
     }
-    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
   }
 
   async function loadCatalog() {
@@ -275,9 +257,9 @@
       });
       state.basket = payload.data || payload;
       if (!state.basket?.packages) await refreshBasket();
-      showAlert("Added to cart.");
+      showAlert("Package added to cart.");
       render();
-      manageMenu("open", "basket");
+      openCartDrawer();
     } catch (error) {
       showAlert(error.message, "danger");
     } finally {
@@ -353,7 +335,7 @@
   function logout() {
     localStorage.removeItem(CONFIG.storageKey);
     state.basket = null;
-    manageMenu("close", "basket");
+    closeCartDrawer();
     render();
     showAlert("Logged out of the store.");
   }
@@ -362,264 +344,270 @@
     const pkg = state.packagesById.get(Number(packageId));
     if (!pkg) return;
     const inBasket = Boolean(packageInBasket(pkg.id));
-    els.modal.innerHTML = `
-      <div class="modalWrapper">
-        <div class="modal__header">
-          <h2>${escapeHtml(pkg.name)}</h2>
-          <button type="button" class="iconBoxed iconBoxed--rounded btn--dark cursorAura cursorAura--dim" data-close-modal>
-            <i class="fas fa-times"></i>
-          </button>
+    const container = els.modalContainer;
+    const sanitizedDesc = sanitizeContent(pkg.description);
+
+    container.innerHTML = `
+      <div class="hud-modal-header">
+        <h2>${escapeHtml(pkg.name)}</h2>
+        <button type="button" class="cart-drawer-close" data-close-modal aria-label="Close modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="hud-modal-body">
+        ${sanitizedDesc ? `<div style="margin-bottom: 1.25rem;">${sanitizedDesc}</div>` : "<p>No special description provided.</p>"}
+        ${
+          pkg.disable_gifting
+            ? ""
+            : `<div class="modal-gift-section">
+                <button type="button" class="modal-gift-toggle" data-toggle-gift>
+                  <i class="fas fa-gift"></i> Send as a Gift to a Friend
+                </button>
+                <form class="modal-gift-form" data-gift-form="${pkg.id}">
+                  <input type="text" name="username" class="hud-input" placeholder="Friend's Minecraft IGN" required style="height: 2.5rem; font-size: 0.85rem;" />
+                  <button type="submit" class="site-button" style="min-height: 2.5rem; background: var(--accent); color: var(--accent-foreground); border: 1px solid var(--accent); font-size: 0.75rem;">Send Gift</button>
+                </form>
+              </div>`
+        }
+      </div>
+      <div class="hud-modal-footer">
+        <div class="modal-price-row">
+          <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--muted-foreground);">Price</span>
+          <span class="modal-price-val">${money(pkg.total_price ?? pkg.base_price, pkg.currency || state.store?.currency)}</span>
         </div>
-        ${pkg.description ? `<div class="modal__body markup__body">${pkg.description}</div>` : ""}
-        <div class="modal__footer">
-          <div class="modal__price">
-            <h3>${money(pkg.total_price ?? pkg.base_price, pkg.currency || state.store?.currency)}</h3>
-            <div class="modal__buttons">
-              ${
-                pkg.disable_gifting
-                  ? ""
-                  : `<button class="btn btn--dark btn--gift cursorAura cursorAura--dim" data-collapse="gift">Gift<i class="fas fa-chevron-down"></i></button>`
-              }
-              ${
-                inBasket
-                  ? `<button class="btn btn--danger cursorAura" data-remove="${pkg.id}">Remove</button>`
-                  : `<button class="btn btn--primary cursorAura" data-add="${pkg.id}">Purchase</button>`
-              }
-            </div>
-          </div>
-          ${
-            pkg.disable_gifting
-              ? ""
-              : `<div class="modal__gift collapsible" data-collapsible="gift">
-                  <form data-gift-form="${pkg.id}">
-                    <input type="text" name="username" placeholder="Enter a username to gift this package to" required />
-                    <button type="submit" class="btn btn--accent cursorAura"><i class="fas fa-gift"></i>Gift</button>
-                  </form>
-                </div>`
-          }
-        </div>
+        ${
+          inBasket
+            ? `<button type="button" class="btn-dual-deck btn-dual-deck--active" data-remove="${pkg.id}">
+                 <span class="deck-main"><i class="fas fa-trash-alt"></i> Remove from Cart</span>
+                 <span class="deck-sub">Currently in your cart</span>
+               </button>`
+            : `<button type="button" class="btn-dual-deck" data-add="${pkg.id}">
+                 <span class="deck-main"><i class="fas fa-shopping-cart"></i> Add to Cart</span>
+                 <span class="deck-sub">Instant delivery in-game</span>
+               </button>`
+        }
       </div>`;
-    els.modal.classList.add("modal--open");
-    bindCursorAura();
+    els.modalOverlay.classList.add("is-open");
   }
 
   function closeModal() {
-    els.modal.classList.remove("modal--open");
-    els.modal.innerHTML = "";
+    els.modalOverlay.classList.remove("is-open");
   }
 
-  function renderNav() {
-    const activeCategory = state.view === "category" ? Number(state.categoryId) : null;
-    const items = state.categories
-      .map((category) => {
-        const active = activeCategory === Number(category.id) ? "active" : "";
-        return `<li class="${active}"><a href="/store/?category=${category.id}" data-route="category" data-category="${category.id}">${escapeHtml(category.name)}</a></li>`;
-      })
-      .join("");
-    els.navCategories.innerHTML = `
-      <button class="header__closeMobileNav iconBoxed iconBoxed--rounded btn--dark cursorAura cursorAura--dim" data-close-nav>
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      <li class="${state.view === "home" || state.view === "complete" ? "active" : ""}"><a href="/store/" data-route="home">Home</a></li>
-      ${items}
-      <div>${renderCartButton()}</div>`;
+  function renderCategoryNav() {
+    const activeCat = state.view === "category" ? Number(state.categoryId) : null;
+    const catItems = state.categories.map((cat) => {
+      const activeClass = activeCat === Number(cat.id) ? "active" : "";
+      return `<li class="${activeClass}"><a href="/?category=${cat.id}" data-route="category" data-category="${cat.id}">${escapeHtml(cat.name)}</a></li>`;
+    }).join("");
+
+    els.categoryNav.innerHTML = `
+      <li class="${state.view === "home" || state.view === "complete" ? "active" : ""}"><a href="/" data-route="home"><i class="fas fa-home"></i> Home</a></li>
+      ${catItems}
+    `;
   }
 
-  function renderCartButton() {
-    if (state.basket?.username) {
-      const count = basketCount();
-      const total = money(state.basket.total_price ?? state.basket.base_price, state.basket.currency);
-      return `
-        <button class="header__cart header__cart--primary cursorAura" data-open-basket>
-          <div class="cart__info">
-            <h2><i class="fas fa-shopping-cart"></i>View Cart</h2>
-            <p>${count > 0 ? `${count} item${count === 1 ? "" : "s"} - ${total}` : "No items in cart!"}</p>
+  function renderHeaderCartSlot() {
+    const count = basketCount();
+    const username = state.basket?.username;
+    const total = money(state.basket?.total_price || 0, state.basket?.currency || "USD");
+
+    if (username) {
+      els.headerCartSlot.innerHTML = `
+        <button type="button" class="header-cart-btn ${count > 0 ? "has-items" : ""}" data-open-cart>
+          <span class="cart-badge">${count}</span>
+          <div class="cart-meta">
+            <span class="cart-title"><i class="fas fa-shopping-cart"></i> Cart</span>
+            <span class="cart-price">${count > 0 ? total : username}</span>
           </div>
-          <div class="cart__player"><img src="https://mc-heads.net/body/${encodeURIComponent(state.basket.username)}/left" class="unselectable" alt="" /></div>
-        </button>`;
+        </button>
+      `;
+    } else {
+      els.headerCartSlot.innerHTML = `
+        <button type="button" class="site-button-outline" data-route="login">
+          <i class="fas fa-user text-primary"></i>
+          <span>Login</span>
+        </button>
+      `;
     }
-    return `
-      <button class="header__cart cursorAura cursorAura--dim" data-route="login">
-        <div class="cart__info">
-          <h2><i class="fas fa-shopping-cart"></i>Login</h2>
-          <p>Start shopping!</p>
-        </div>
-      </button>`;
   }
 
-  function renderBasket() {
-    const currency = state.basket?.currency || state.store?.currency || "USD";
+  function renderCartDrawer() {
     const items = basketPackages();
-    const username = state.basket?.username || "";
-    els.basketUsername.textContent = username || "Guest";
-    els.basketSummary.textContent = items.length
-      ? `${basketCount()} item${basketCount() === 1 ? "" : "s"} for ${money(state.basket.total_price, currency)}`
-      : "No items in cart!";
-    els.basketTotal.textContent = money(state.basket?.total_price || 0, currency);
-    els.basketPlayer.src = username
-      ? `https://mc-heads.net/body/${encodeURIComponent(username)}/left`
-      : "";
-    els.basketItems.innerHTML = items
-      .map((pkg) => {
-        const qty = Number(pkg.in_basket?.quantity || pkg.quantity || 1);
-        const price = pkg.in_basket?.price ?? pkg.total_price ?? pkg.base_price;
-        return `
-          <div class="package">
-            <div class="package__info">
-              <h3>${escapeHtml(truncate(pkg.name, 25))}</h3>
-              <span class="tag tag--left tag--700">${escapeHtml(money(price, currency))}</span>
-            </div>
-            <div class="package__buttons">
-              <span>Quantity:</span>
-              <button class="iconBoxed iconBoxed--rounded package__infoModal cursorAura cursorAura--dim" data-info="${pkg.id}"><i class="fas fa-info"></i></button>
-              <button class="iconBoxed iconBoxed--rounded package__remove cursorAura" data-qty="${pkg.id}" data-next="${qty - 1}"><i class="fas fa-minus"></i></button>
-              <input type="text" class="package__quantity" value="${qty}" readonly maxlength="3" />
-              <button class="iconBoxed iconBoxed--rounded package__add cursorAura" data-qty="${pkg.id}" data-next="${qty + 1}"><i class="fas fa-plus"></i></button>
-            </div>
-          </div>`;
-      })
-      .join("");
-  }
+    const username = state.basket?.username;
+    const currency = state.basket?.currency || state.store?.currency || "USD";
 
-  function renderPackageCard(pkg, displayType) {
-    const currency = pkg.currency || state.store?.currency || "USD";
-    const inBasket = packageInBasket(pkg.id);
-    const qty = packageQuantity(pkg.id);
-    const image = pkg.image
-      ? `<div class="package__image"><a href="#" data-info="${pkg.id}"><img src="${escapeHtml(pkg.image)}" alt="${escapeHtml(pkg.name)}" /></a></div>`
-      : `<div class="package__image"><a href="#" data-info="${pkg.id}" class="package__placeholder">${escapeHtml(pkg.name)}</a></div>`;
-    const buttons = inBasket
-      ? `<div class="package__buttons">
-           <button class="iconBoxed iconBoxed--rounded package__remove cursorAura" data-qty="${pkg.id}" data-next="${qty - 1}"><i class="fas fa-minus"></i></button>
-           <input type="text" class="package__quantity" value="${qty}" readonly maxlength="3" />
-           <button class="iconBoxed iconBoxed--rounded package__add cursorAura" data-qty="${pkg.id}" data-next="${qty + 1}"><i class="fas fa-plus"></i></button>
-         </div>`
-      : `<div class="package__buttons package__buttons--outBasket">
-           <button class="iconBoxed iconBoxed--rounded package__infoModal toggle-modal cursorAura cursorAura--dim" data-info="${pkg.id}"><i class="fas fa-info"></i></button>
-           <button class="btn btn--primary cursorAura" data-add="${pkg.id}">Add to Cart</button>
-         </div>`;
-
-    if (displayType === "list") {
-      return `
-        <div class="package">
-          <div class="package__info">
-            <h3>${escapeHtml(truncate(pkg.name, 25))}</h3>
-            <div class="package__tags">
-              <span class="tag tag--left tag--700">${escapeHtml(money(pkg.total_price ?? pkg.base_price, currency))}</span>
-            </div>
-          </div>
-          ${buttons}
-        </div>`;
+    if (username) {
+      els.cartUsername.textContent = username;
+      els.cartUserAvatar.src = `https://mc-heads.net/avatar/${encodeURIComponent(username)}/64`;
+      els.cartUserAvatar.style.display = "block";
+      els.cartLogoutBtn.style.display = "inline-flex";
+    } else {
+      els.cartUsername.textContent = "Guest";
+      els.cartUserAvatar.style.display = "none";
+      els.cartLogoutBtn.style.display = "none";
     }
 
-    return `
-      <div class="package">
-        ${image}
-        <div class="package__info">
-          <h2>${escapeHtml(truncate(pkg.name, 20))}</h2>
-          <h3>${escapeHtml(money(pkg.total_price ?? pkg.base_price, currency))}</h3>
+    els.cartTotalAmount.textContent = money(state.basket?.total_price || 0, currency);
+
+    if (!items.length) {
+      els.cartDrawerItems.innerHTML = `
+        <div class="cart-empty-state">
+          <i class="fas fa-shopping-basket"></i>
+          <p>Your cart is empty</p>
+          <span style="font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;">Select packages to get started</span>
         </div>
-        ${buttons}
-      </div>`;
+      `;
+      return;
+    }
+
+    els.cartDrawerItems.innerHTML = items.map((pkg) => {
+      const qty = Number(pkg.in_basket?.quantity || pkg.quantity || 1);
+      const price = pkg.in_basket?.price ?? pkg.total_price ?? pkg.base_price;
+      return `
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <div class="cart-item-title">${escapeHtml(pkg.name)}</div>
+            <div class="cart-item-price">${money(price, currency)}</div>
+          </div>
+          <div class="quantity-control" style="height: 2rem;">
+            <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty - 1}"><i class="fas fa-minus" style="font-size: 0.7rem;"></i></button>
+            <span class="quantity-display" style="padding: 0 0.5rem; font-size: 0.85rem;">${qty}</span>
+            <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty + 1}"><i class="fas fa-plus" style="font-size: 0.7rem;"></i></button>
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
-  function renderCategory(category) {
-    const displayType = category.display_type === "list" ? "list" : "images";
-    const packages = (category.packages || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
-    const cards = packages.length
-      ? packages.map((pkg) => renderPackageCard(pkg, displayType)).join("")
-      : `<p>No packages to display in this category.</p>`;
+  function renderPackageCard(pkg, index) {
+    const currency = pkg.currency || state.store?.currency || "USD";
+    const inBasket = Boolean(packageInBasket(pkg.id));
+    const qty = packageQuantity(pkg.id);
+    const indexStr = index < 9 ? `0${index + 1}` : String(index + 1);
+
+    const imageHtml = pkg.image
+      ? `<img src="${escapeHtml(pkg.image)}" alt="${escapeHtml(pkg.name)}" loading="lazy" />`
+      : `<div class="package-placeholder-icon"><i class="fas fa-box-open"></i></div>`;
+
+    const buttonHtml = inBasket
+      ? `<div class="quantity-control">
+           <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty - 1}" title="Decrease quantity"><i class="fas fa-minus"></i></button>
+           <span class="quantity-display">${qty} in cart</span>
+           <button type="button" class="quantity-btn" data-qty="${pkg.id}" data-next="${qty + 1}" title="Increase quantity"><i class="fas fa-plus"></i></button>
+         </div>`
+      : `<button type="button" class="btn-dual-deck" data-add="${pkg.id}">
+           <span class="deck-main"><i class="fas fa-shopping-cart"></i> Add to Cart</span>
+           <span class="deck-sub">Instant delivery</span>
+         </button>`;
+
     return `
-      <div class="panel category-block">
-        <div class="panel__heading"><h1>${escapeHtml(category.name)}</h1></div>
-        <div class="panel__body">
-          ${category.description ? `<div class="panel__description markup__body">${category.description}</div>` : ""}
-          <div class="category category--${displayType}">${cards}</div>
+      <article class="package-card">
+        <div class="package-card-top">
+          <span class="package-index">${indexStr}</span>
+          <button type="button" class="package-info-btn" data-info="${pkg.id}" title="Package details">
+            <i class="fas fa-info"></i>
+          </button>
         </div>
-      </div>`;
+        <div class="package-image-wrap">
+          ${imageHtml}
+        </div>
+        <div class="package-card-body">
+          <h3 class="package-card-title">${escapeHtml(pkg.name)}</h3>
+          <div class="package-card-price">${money(pkg.total_price ?? pkg.base_price, currency)}</div>
+        </div>
+        <div class="package-card-actions">
+          ${buttonHtml}
+        </div>
+      </article>
+    `;
+  }
+
+  function renderCategorySection(category) {
+    const packages = (category.packages || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+    const cards = packages.map((pkg, idx) => renderPackageCard(pkg, idx)).join("");
+    const desc = sanitizeContent(category.description);
+
+    return `
+      <section class="category-section">
+        <div class="category-header">
+          <h2>${escapeHtml(category.name)}</h2>
+          ${desc ? `<p class="category-description">${desc}</p>` : ""}
+        </div>
+        <div class="package-grid">
+          ${cards || "<p class='text-muted'>No packages available in this category.</p>"}
+        </div>
+      </section>
+    `;
   }
 
   function renderMain() {
     if (state.view === "login") {
       els.content.innerHTML = `
-        <div class="panel">
-          <div class="panel__heading"><h1>Login</h1></div>
-          <div class="panel__body">
-            <p style="padding-bottom:1rem">Enter the Minecraft username that should receive this purchase.</p>
-            <form class="username" data-login-form>
-              <input type="text" name="ign" class="input--900" placeholder="Enter your username" required autocomplete="username" />
-              <button class="btn btn--primary cursorAura" type="submit">Login</button>
-            </form>
-          </div>
-        </div>`;
+        <div class="login-panel">
+          <h2><i class="fas fa-user-astronaut text-primary"></i> Player Login</h2>
+          <p>Enter your exact Minecraft username so Tebex can deliver your purchases in-game.</p>
+          <form data-login-form>
+            <input type="text" name="ign" class="hud-input" placeholder="Minecraft Username (e.g. Notch)" required autofocus autocomplete="username" />
+            <div style="margin-top: 1.25rem;">
+              <button type="submit" class="btn-dual-deck">
+                <span class="deck-main"><i class="fas fa-sign-in-alt"></i> Login & Continue</span>
+                <span class="deck-sub">Connect to Tebex session</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
       return;
     }
 
     if (state.view === "complete") {
       els.content.innerHTML = `
-        <div class="panel">
-          <div class="panel__heading"><h1>Thank you</h1></div>
-          <div class="panel__body markup__body">
-            <p>Your checkout is complete. Commands are delivered to the Minecraft username you used at login.</p>
-            <p><a href="/store/" data-route="home">Return to the store</a></p>
-          </div>
-        </div>`;
+        <div class="complete-panel">
+          <h2><i class="fas fa-check-circle text-primary"></i> Order Confirmed</h2>
+          <p>Thank you for supporting Arcturus Factions! Your order is being processed and will be delivered to your account in-game shortly.</p>
+          <a href="/" data-route="home" class="btn-dual-deck" style="max-width: 280px; margin: 0 auto;">
+            <span class="deck-main"><i class="fas fa-store"></i> Return to Store</span>
+            <span class="deck-sub">Continue browsing</span>
+          </a>
+        </div>
+      `;
       return;
     }
 
     if (state.view === "category") {
-      const category = state.categories.find((item) => Number(item.id) === Number(state.categoryId));
-      els.content.innerHTML = category
-        ? renderCategory(category)
-        : `<div class="panel"><div class="panel__heading"><h1>Category not found</h1></div></div>`;
+      const cat = state.categories.find((c) => Number(c.id) === Number(state.categoryId));
+      if (!cat) {
+        els.content.innerHTML = `<div class="hud-panel"><div class="hud-panel-header"><h2>Category not found</h2></div></div>`;
+        return;
+      }
+      els.content.innerHTML = renderCategorySection(cat);
       return;
     }
 
-    const intro = state.store?.description || "<p>Welcome to the Arcturus store.</p>";
-    const sections = state.categories.map((category) => renderCategory(category)).join("");
+    // Home view: Intro panel + all categories
+    const rawIntro = state.store?.description || "<p>Welcome to the Arcturus store.</p>";
+    const sanitizedIntro = sanitizeContent(rawIntro);
+
+    const sections = state.categories.map((c) => renderCategorySection(c)).join("");
     els.content.innerHTML = `
-      <div class="panel">
-        <div class="panel__heading"><h1>${escapeHtml(state.store?.name || "Arcturus Factions")}</h1></div>
-        <div class="panel__body markup__body">${intro}</div>
+      <div class="hud-panel" style="margin-bottom: 2.5rem;">
+        <div class="hud-panel-header">
+          <h3><i class="fas fa-bullhorn text-accent"></i> Welcome to the Store</h3>
+        </div>
+        <div class="hud-panel-body" style="font-size: 1rem;">
+          ${sanitizedIntro}
+        </div>
       </div>
-      ${sections}`;
-  }
-
-  function renderSidebar() {
-    els.sidebar.innerHTML = `
-      <aside class="module">
-        <div class="module__heading"><h2>Server</h2></div>
-        <div class="module__body store-status">
-          <p><strong>IP</strong><br>${escapeHtml(CONFIG.server)}</p>
-          <p>Supports 1.8+ Java and Bedrock. Cracked clients are welcome.</p>
-        </div>
-      </aside>
-      <aside class="module">
-        <div class="module__heading"><h2>Need help?</h2></div>
-        <div class="module__body store-status">
-          <p>Open a ticket on Discord if a package does not deliver.</p>
-          <p><a href="${CONFIG.discord}" target="_blank" rel="noopener">Join Discord</a></p>
-        </div>
-      </aside>`;
-  }
-
-  function renderHeaderMeta() {
-    const name = state.store?.name || "Arcturus Factions";
-    document.title = `${name} | Store`;
-    if (state.store?.logo) {
-      els.logoImg.src = state.store.logo;
-      els.logoBlur.src = state.store.logo;
-      els.popupLogo.src = state.store.logo;
-    }
+      ${sections}
+    `;
   }
 
   function render() {
-    renderHeaderMeta();
-    renderNav();
-    renderSidebar();
+    renderCategoryNav();
+    renderHeaderCartSlot();
+    renderCartDrawer();
     renderMain();
-    renderBasket();
-    bindCursorAura();
   }
 
   async function handleLogin(username) {
@@ -643,26 +631,34 @@
   }
 
   function onClick(event) {
-    const closeModalBtn = event.target.closest("[data-close-modal]");
-    if (closeModalBtn) {
+    // Modal close
+    if (event.target.closest("[data-close-modal]") || event.target === els.modalOverlay) {
       event.preventDefault();
       closeModal();
       return;
     }
-    if (event.target === els.modal) {
-      closeModal();
-      return;
-    }
 
-    const collapse = event.target.closest("[data-collapse]");
-    if (collapse) {
+    // Gift section toggle
+    if (event.target.closest("[data-toggle-gift]")) {
       event.preventDefault();
-      const name = collapse.getAttribute("data-collapse");
-      const panel = document.querySelector(`[data-collapsible="${name}"]`);
-      if (panel) panel.classList.toggle("collapsible--open");
+      const form = $(".modal-gift-form");
+      if (form) form.classList.toggle("is-open");
       return;
     }
 
+    // Cart drawer open/close
+    if (event.target.closest("[data-open-cart]")) {
+      event.preventDefault();
+      openCartDrawer();
+      return;
+    }
+    if (event.target.closest("[data-close-drawer]")) {
+      event.preventDefault();
+      closeCartDrawer();
+      return;
+    }
+
+    // Package info modal
     const info = event.target.closest("[data-info]");
     if (info) {
       event.preventDefault();
@@ -670,13 +666,16 @@
       return;
     }
 
+    // Add package
     const add = event.target.closest("[data-add]");
     if (add) {
       event.preventDefault();
+      closeModal();
       addPackage(add.getAttribute("data-add"));
       return;
     }
 
+    // Remove package
     const remove = event.target.closest("[data-remove]");
     if (remove) {
       event.preventDefault();
@@ -685,6 +684,7 @@
       return;
     }
 
+    // Quantity update
     const qty = event.target.closest("[data-qty]");
     if (qty) {
       event.preventDefault();
@@ -692,6 +692,7 @@
       return;
     }
 
+    // Routes
     const route = event.target.closest("[data-route]");
     if (route) {
       event.preventDefault();
@@ -699,38 +700,37 @@
       if (view === "home") setRoute({ view: "home" });
       if (view === "login") setRoute({ view: "login" });
       if (view === "category") setRoute({ view: "category", categoryId: Number(route.getAttribute("data-category")) });
-      manageMenu("close", "nav");
       return;
     }
 
-    if (event.target.closest("[data-open-basket]")) {
-      event.preventDefault();
-      manageMenu("open", "basket");
-      return;
-    }
-    if (event.target.closest("[data-close-basket]")) {
-      event.preventDefault();
-      manageMenu("close", "basket");
-      return;
-    }
-    if (event.target.closest("[data-close-nav]")) {
-      event.preventDefault();
-      manageMenu("close", "nav");
-      return;
-    }
-    if (event.target.closest("[data-open-nav]")) {
-      event.preventDefault();
-      manageMenu("open", "nav");
-      return;
-    }
-    if (event.target.closest("[data-checkout]")) {
+    // Checkout
+    if (event.target.closest("#cartCheckoutBtn")) {
       event.preventDefault();
       checkout();
       return;
     }
-    if (event.target.closest("[data-logout]")) {
+
+    // Logout
+    if (event.target.closest("#cartLogoutBtn")) {
       event.preventDefault();
       logout();
+      return;
+    }
+
+    // Copy IP (Header or Sidebar)
+    const copyBtn = event.target.closest("#serverLink, #sidebarCopyBtn");
+    if (copyBtn) {
+      event.preventDefault();
+      copyText(CONFIG.server);
+      const sub = $("#sidebarCopySub");
+      if (sub) {
+        sub.textContent = "Copied to clipboard!";
+        window.clearTimeout(copyBtn.timer);
+        copyBtn.timer = window.setTimeout(() => {
+          sub.textContent = "Click to copy";
+        }, 2200);
+      }
+      showAlert("Server IP copied to clipboard: " + CONFIG.server);
       return;
     }
   }
@@ -743,6 +743,7 @@
       if (username) handleLogin(String(username));
       return;
     }
+
     const gift = event.target.closest("[data-gift-form]");
     if (gift) {
       event.preventDefault();
@@ -752,6 +753,7 @@
         closeModal();
         addPackage(packageId, { gift_username: String(username) });
       }
+      return;
     }
   }
 
@@ -762,52 +764,33 @@
         els.serverCount.textContent = String(ping.players.online);
       }
     } catch {
-      /* player count is optional */
-    }
-    try {
-      const discord = await fetch(`https://discord.com/api/guilds/${CONFIG.discordId}/widget.json`).then((res) => res.json());
-      if (Number.isFinite(discord?.presence_count)) {
-        els.discordCount.textContent = String(discord.presence_count);
-      }
-    } catch {
-      try {
-        const invite = await fetch(`https://discord.com/api/v9/invites/DTR6serkeM?with_counts=1`).then((res) => res.json());
-        if (Number.isFinite(invite?.approximate_presence_count)) {
-          els.discordCount.textContent = String(invite.approximate_presence_count);
-        }
-      } catch {
-        /* discord count is optional */
-      }
+      /* optional ping */
     }
   }
 
   async function start() {
-    els.alert = $("#store-alert");
-    els.navCategories = $("#nav");
-    els.sidebar = $("#sidebar");
+    els.alert = $("#storeAlert");
+    els.alertText = $("#storeAlertText");
+    els.categoryNav = $("#categoryNav");
+    els.headerCartSlot = $("#header-cart-slot");
     els.content = $("#content");
-    els.modal = $("#popup-modal");
-    els.popup = $(".popup");
-    els.popupBack = $(".popupBack");
-    els.popupLogo = $(".popup__logoBackground");
-    els.logoImg = $("#store-logo");
-    els.logoBlur = $("#store-logo-blur");
-    els.basketItems = $("#basket-items");
-    els.basketSummary = $("#basket-summary");
-    els.basketTotal = $("#basket-total");
-    els.basketUsername = $("#basket-username");
-    els.basketPlayer = $("#basket-player");
+    els.cartDrawer = $("#cartDrawer");
+    els.cartDrawerOverlay = $("#cartDrawerOverlay");
+    els.cartUsername = $("#cartUsername");
+    els.cartUserAvatar = $("#cartUserAvatar");
+    els.cartLogoutBtn = $("#cartLogoutBtn");
+    els.cartDrawerItems = $("#cartDrawerItems");
+    els.cartTotalAmount = $("#cartTotalAmount");
+    els.modalOverlay = $("#packageModal");
+    els.modalContainer = $("#packageModalContainer");
     els.serverCount = $("#serverCount");
-    els.discordCount = $("#discordCount");
 
-    document.getElementById("copyrightYear").textContent = String(new Date().getFullYear());
-    document.getElementById("serverLink").addEventListener("click", () => {
-      copyText(CONFIG.server);
-      popupDisplay(true);
-    });
-    document.getElementById("closePopup").addEventListener("click", () => popupDisplay(false));
+    const year = $("#copyrightYear");
+    if (year) year.textContent = String(new Date().getFullYear());
+
     document.addEventListener("click", onClick);
     document.addEventListener("submit", onSubmit);
+
     window.addEventListener("popstate", () => {
       const route = parseRoute();
       state.view = route.view;
@@ -827,12 +810,19 @@
       }
       render();
     } catch (error) {
-      els.content.innerHTML = `<div class="panel"><div class="panel__heading"><h1>Store unavailable</h1></div><div class="panel__body">${escapeHtml(error.message)}</div></div>`;
+      els.content.innerHTML = `
+        <div class="hud-panel">
+          <div class="hud-panel-header">
+            <h2><i class="fas fa-exclamation-triangle text-accent"></i> Store Unavailable</h2>
+          </div>
+          <div class="hud-panel-body">
+            <p>${escapeHtml(error.message)}</p>
+          </div>
+        </div>
+      `;
       showAlert(error.message, "danger");
     }
   }
 
-  window.manageMenu = manageMenu;
-  window.toggleDropdown = toggleDropdown;
   document.addEventListener("DOMContentLoaded", start);
 })();
