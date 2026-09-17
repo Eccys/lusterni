@@ -46,7 +46,11 @@
       .replace(/https?:\/\/arcturusmc\.xyz\/discord/gi, CONFIG.discord)
       .replace(/arcturusmc\.xyz/gi, "arcturusmc.org")
       .replace(
-        /You can buy ranks and pinatas with gold\./gi,
+        /Gold is the premium currency on Arcturus for upgrading yourself and getting special items\.(\s*<br\s*\/?>\s*|\s*)(You can buy (?:ranks and pinatas|tiers, pinatas, and chest keys) with gold\.)?/gi,
+        "Gold is the premium currency on Arcturus for getting tiers, pinatas, and chest keys."
+      )
+      .replace(
+        /You can buy (?:ranks and pinatas|tiers, pinatas, and chest keys) with gold\./gi,
         "You can buy tiers, pinatas, and chest keys with gold."
       )
       .replace(
@@ -434,16 +438,14 @@
   function renderHeaderCartSlot() {
     const count = basketCount();
     const username = state.basket?.username;
-    const total = money(state.basket?.total_price || 0, state.basket?.currency || "USD");
 
     if (username) {
+      const cartLabel = `${escapeHtml(username)}'s Cart`;
       els.headerCartSlot.innerHTML = `
-        <button type="button" class="header-cart-btn ${count > 0 ? "has-items" : ""}" data-open-cart>
-          <span class="cart-badge">${count}</span>
-          <div class="cart-meta">
-            <span class="cart-title"><i class="fas fa-shopping-cart"></i> Cart</span>
-            <span class="cart-price">${count > 0 ? total : username}</span>
-          </div>
+        <button type="button" class="header-cart-btn ${count > 0 ? "has-items" : ""}" data-open-cart aria-label="View Cart">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+          <span>${cartLabel}</span>
+          ${count > 0 ? `<span class="cart-badge">${count}</span>` : ""}
         </button>
       `;
     } else {
@@ -569,7 +571,7 @@
             </div>
             <div class="featured-details" data-info="${featPkg.id}">
               <h2 data-info="${featPkg.id}">${escapeHtml(featPkg.name)} Bundle</h2>
-              <p data-info="${featPkg.id}">Gold is the premium currency on Arcturus for upgrading yourself and getting special items. You can buy tiers, pinatas, and chest keys with gold.</p>
+              <p data-info="${featPkg.id}">Gold is the premium currency on Arcturus for getting tiers, pinatas, and chest keys.</p>
               <div class="featured-price" data-info="${featPkg.id}">${priceStr} <span class="featured-discount text-accent">+ MAXIMUM VALUE</span></div>
             </div>
             <div class="featured-action">

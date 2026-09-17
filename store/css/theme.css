@@ -266,62 +266,66 @@ body {
   z-index: 2;
 }
 
-/* Header Cart Button */
+/* Header Cart Button (Matches Discord / Outline Button Sleek Aesthetic) */
 .header-cart-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.5rem 0.95rem;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem 1rem;
   border: 1px solid var(--border);
   border-radius: 0 !important;
   background: color-mix(in oklab, var(--background) 70%, transparent);
   color: var(--foreground);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  outline: none;
+}
+
+.header-cart-btn svg {
+  color: currentColor;
+  transition: color 0.2s ease;
 }
 
 .header-cart-btn:hover {
   border-color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.header-cart-btn:hover svg {
+  color: var(--primary);
+}
+
+.header-cart-btn:active {
+  transform: scale(0.95);
 }
 
 .header-cart-btn.has-items {
   border-color: var(--accent);
-  background: color-mix(in oklab, var(--accent) 15%, transparent);
 }
 
 .header-cart-btn .cart-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.25rem;
-  height: 1.25rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
   padding: 0 0.35rem;
   border-radius: 0 !important;
   background: var(--accent);
   color: var(--accent-foreground);
   font-size: 0.7rem;
   font-weight: 700;
-}
-
-.header-cart-btn .cart-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.header-cart-btn .cart-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.header-cart-btn .cart-price {
-  font-size: 0.65rem;
-  color: var(--accent);
-  font-weight: 600;
+  margin-left: 0.25rem;
 }
 
 /* Header Login Button (Matches Discord Button Aesthetic) */
