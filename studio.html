@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discord Link Preview Studio & Real-Time IDE</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=gg+sans:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    body {
+      font-family: 'gg sans', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #1e1f22;
+      color: #dbdee1;
+    }
+
+    /* Discord Colors & Exact Specs */
+    .discord-chat-bg {
+      background-color: #313338;
+    }
+    .discord-chat-bg.theme-midnight {
+      background-color: #000000;
+    }
+    .discord-sidebar-bg {
+      background-color: #2b2d31;
+    }
+    .discord-server-bg {
+      background-color: #1e1f22;
+    }
+
+    /* Embed Container */
+    .discord-embed-card {
+      background-color: #2b2d31;
+      border-radius: 4px;
+      border-left: 4px solid #18cfdc;
+      padding: 12px 16px;
+      max-width: 432px;
+      width: 100%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      transition: border-color 0.15s ease, background-color 0.2s ease;
+    }
+    .theme-midnight .discord-embed-card {
+      background-color: #111214;
+    }
+
+    /* Discord Action Row Link Button */
+    .discord-link-btn {
+      background-color: #383a40;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 16px;
+      height: 32px;
+      padding: 0 16px;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.17s ease, color 0.17s ease;
+      text-decoration: none !important;
+    }
+    .discord-link-btn:hover {
+      background-color: #474950;
+      color: #ffffff;
+    }
+    .discord-link-btn:active {
+      background-color: #50535b;
+    }
+
+    /* Markdown styling in Discord */
+    .discord-markdown {
+      font-size: 14px;
+      line-height: 1.375rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .discord-markdown strong {
+      font-weight: 700;
+      color: #f2f3f5;
+    }
+    .discord-markdown em {
+      font-style: italic;
+      color: #dbdee1;
+    }
+    .discord-markdown u {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .discord-markdown del {
+      text-decoration: line-through;
+      color: #949ba4;
+    }
+    .discord-markdown a {
+      color: #00a8fc;
+      text-decoration: none;
+    }
+    .discord-markdown a:hover {
+      text-decoration: underline;
+    }
+    .discord-blockquote {
+      border-left: 4px solid #4e5058;
+      padding-left: 12px;
+      margin: 4px 0;
+      color: #dbdee1;
+    }
+    .discord-code-inline {
+      background-color: #1e1f22;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      color: #2dc770;
+    }
+    .discord-code-block {
+      background-color: #1e1f22;
+      border: 1px solid #232428;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      color: #00d26a;
+      overflow-x: auto;
+      margin: 6px 0;
+    }
+    .discord-spoiler {
+      background-color: #202225;
+      color: transparent;
+      border-radius: 3px;
+      padding: 1px 5px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .discord-spoiler.revealed {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #f2f3f5;
+      user-select: text;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #2b2d31;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1a1b1e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #111214;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- TOP APP NAV BAR -->
+  <header class="h-12 bg-[#111214] border-b border-[#2b2d31] flex items-center justify-between px-4 z-20 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow">
+          <i class="fa-brands fa-discord text-sm"></i>
+        </div>
+        <h1 class="text-sm font-bold text-white tracking-wide">
+          Discord Embed Studio <span class="text-xs font-normal text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/50">Components V2</span>
+        </h1>
+      </div>
+      <div class="h-4 w-[1px] bg-[#3f4147] mx-1"></div>
+      <div id="save-status-badge" class="flex items-center gap-1.5 text-xs text-gray-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="save-status-text">Ready</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-2.5">
+      <button onclick="formatJson()" class="px-2.5 py-1 text-xs font-medium text-gray-300 hover:text-white bg-[#2b2d31] hover:bg-[#383a40] rounded transition flex items-center gap-1.5">
+        <i class="fa-solid fa-code"></i> Format JSON
+      </button>
+      <button onclick="saveToFiles()" id="btn-save" class="px-3 py-1 text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 rounded shadow transition flex items-center gap-1.5">
+        <i class="fa-solid fa-floppy-disk"></i> Save to Website
+      </button>
+      <button onclick="pushToGit()" id="btn-push" class="px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded shadow transition flex items-center gap-1.5">
+        <i class="fa-brands fa-github"></i> Git Push
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN SPLIT WORKSPACE -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- LEFT PANE: IDE & EDITOR -->
+    <section class="w-1/2 min-w-[380px] max-w-[680px] bg-[#1e1f22] border-r border-[#2b2d31] flex flex-col h-full z-10 shadow-lg">
+      
+      <!-- Editor Tabs -->
+      <div class="h-10 bg-[#2b2d31] flex items-center justify-between px-3 border-b border-[#1f2023] shrink-0">
+        <div class="flex items-center gap-1">
+          <button id="tab-btn-visual" onclick="switchEditorTab('visual')" class="px-3 py-1 text-xs font-semibold rounded bg-[#1e1f22] text-cyan-400 border-t-2 border-cyan-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders"></i> Visual Controls
+          </button>
+          <button id="tab-btn-json" onclick="switchEditorTab('json')" class="px-3 py-1 text-xs font-semibold rounded text-gray-400 hover:text-gray-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-brackets-curly"></i> Raw JSON Payload
+          </button>
+          <button id="tab-btn-cheatsheet" onclick="switchEditorTab('cheatsheet')" class="px-3 py-1 text-xs font-semibold rounded text-gray-400 hover:text-gray-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-book-bookmark"></i> Markdown Guide
+          </button>
+        </div>
+        <div class="text-[11px] text-gray-400 font-mono">
+          Auto-Sync: <span class="text-emerald-400">ON</span>
+        </div>
+      </div>
+
+      <!-- TAB A: VISUAL CONTROLS -->
+      <div id="editor-view-visual" class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        
+        <!-- 1. Accent Color -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40]">
+          <div class="flex items-center justify-between mb-2">
+            <label class="font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-palette text-cyan-400"></i> Container Accent Color
+            </label>
+            <span id="color-int-display" class="font-mono text-[10px] text-gray-400">int: 1626076</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <input type="color" id="ctrl-color-picker" value="#18cfdc" oninput="onVisualColorChange(this.value)" class="w-9 h-9 rounded cursor-pointer border-0 bg-transparent" />
+            <input type="text" id="ctrl-color-hex" value="#18cfdc" oninput="onVisualHexChange(this.value)" class="bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1 text-xs font-mono uppercase w-28 text-white focus:border-cyan-400 outline-none" />
+            <span class="text-[11px] text-gray-400">Site Electric Cyan (oklch 78% .13 203)</span>
+          </div>
+        </div>
+
+        <!-- 2. Hero Banner Image -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40] space-y-2">
+          <label class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-regular fa-image text-cyan-400"></i> 1. Top Hero Banner (Type 12 Media Gallery)
+          </label>
+          <input type="text" id="ctrl-hero-img" value="https://www.arcturusmc.org/images/arcturus-night.webp" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none" />
+          <div class="flex items-center gap-2 text-[11px] text-gray-400">
+            <span>Presets:</span>
+            <button onclick="setHeroPreset('/images/arcturus-night.webp')" class="underline hover:text-white">Moonlit Spawn</button>
+            <button onclick="setHeroPreset('/images/arcturus-factions.webp')" class="underline hover:text-white">Factions Village</button>
+            <button onclick="setHeroPreset('/images/og-image.webp')" class="underline hover:text-white">OG Banner</button>
+          </div>
+        </div>
+
+        <!-- 3. Section Content & Thumbnail Accessory -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40] space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group text-cyan-400"></i> 2. Section Details (Type 9) & Thumbnail (Type 11)
+            </label>
+          </div>
+
+          <div>
+            <span class="text-[11px] text-gray-400 block mb-1">Section Header:</span>
+            <input type="text" id="ctrl-section-title" value="🌌 **Arcturus Factions & KitPvP** ⚔️" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-semibold focus:border-cyan-400 outline-none" />
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] text-gray-400">Description & Highlights (Markdown Enabled):</span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="insertVisualTag('**', '**')" class="px-1.5 py-0.5 bg-[#1e1f22] hover:bg-[#383a40] rounded font-bold text-[10px] text-gray-300">B</button>
+                <button type="button" onclick="insertVisualTag('*', '*')" class="px-1.5 py-0.5 bg-[#1e1f22] hover:bg-[#383a40] rounded italic text-[10px] text-gray-300">I</button>
+                <button type="button" onclick="insertVisualTag('__', '__')" class="px-1.5 py-0.5 bg-[#1e1f22] hover:bg-[#383a40] rounded underline text-[10px] text-gray-300">U</button>
+                <button type="button" onclick="insertVisualTag('`', '`')" class="px-1.5 py-0.5 bg-[#1e1f22] hover:bg-[#383a40] rounded font-mono text-[10px] text-gray-300">&lt;&gt;</button>
+                <button type="button" onclick="insertVisualTag('> ', '')" class="px-1.5 py-0.5 bg-[#1e1f22] hover:bg-[#383a40] rounded text-[10px] text-gray-300">&gt;</button>
+              </div>
+            </div>
+            <textarea id="ctrl-section-desc" rows="6" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono leading-relaxed focus:border-cyan-400 outline-none">*A next-gen competitive Minecraft network with smooth 1.8 PvP, custom cannons, pet combat, and a fair non-P2W economy.*
+
+> ✦ ──────── ⚡ **Arcturus Factions** ⚡ ──────── ✦
+> [ 1.8 Combat ] • [ Cracked & Bedrock ] • [ Non-P2W ]
+
+. - ∘ -: ✧ :-  **Server Highlights** -: ✧ :- ∘ - .
+├── 🏆 `payouts`  :: Monthly $100 FactionsTop PayPal rewards!
+├── ⚡ `enchants` :: Balanced & easy-to-learn custom enchantments
+├── 🐾 `petpvp`   :: Pet leveling & custom combat abilities
+└── 🛡️ `crossplay`:: Java 1.8–1.21+ & Bedrock crossplay support</textarea>
+          </div>
+
+          <div>
+            <span class="text-[11px] text-gray-400 block mb-1">Right-Side Thumbnail Accessory URL (Type 11):</span>
+            <input type="text" id="ctrl-thumb-img" value="https://www.arcturusmc.org/assets/logo.png" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none" />
+          </div>
+        </div>
+
+        <!-- 4. Showcase / YouTube Trailer -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40] space-y-2">
+          <label class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-brands fa-youtube text-red-500"></i> 3. Trailer Showcase Banner & Video Link
+          </label>
+          <div>
+            <span class="text-[11px] text-gray-400 block mb-1">Trailer Poster Image URL (Type 12):</span>
+            <input type="text" id="ctrl-trailer-img" value="https://www.arcturusmc.org/images/trailer.jpg" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none" />
+          </div>
+          <div>
+            <span class="text-[11px] text-gray-400 block mb-1">YouTube Target URL:</span>
+            <input type="text" id="ctrl-yt-url" value="https://www.youtube.com/watch?v=kPjvbbAWTJ0" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none" />
+          </div>
+          <div>
+            <span class="text-[11px] text-gray-400 block mb-1">Caption Line:</span>
+            <input type="text" id="ctrl-trailer-caption" value="*🎬 [Click to Watch Official Trailer](https://www.youtube.com/watch?v=kPjvbbAWTJ0) — Minecraft Factions Reimagined*" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none" />
+          </div>
+        </div>
+
+        <!-- 5. Server Stats Box -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40] space-y-2">
+          <label class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-server text-cyan-400"></i> 4. Server Stats Box (Code Block)
+          </label>
+          <textarea id="ctrl-stats-box" rows="5" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none">```yaml
+✦ Server IP:       play.arcturusmc.org
+✦ Bedrock Port:    19132 (Default)
+✦ Version Support: 1.8 — 1.21+ (Java & Bedrock)
+✦ Competition:     $100 Monthly FactionsTop Payouts
+✦ Gameplay:        Custom Cannons • Pet PvP • Non-P2W
+```</textarea>
+        </div>
+
+        <!-- 6. Animated Server Banner -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40] space-y-2">
+          <label class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-film text-cyan-400"></i> 5. Custom Animated Banner (GIF / MP4)
+          </label>
+          <input type="text" id="ctrl-banner-gif" value="https://www.arcturusmc.org/images/banner.gif" oninput="updateFromJsonOrVisual(false)" class="w-full bg-[#1e1f22] border border-[#3f4147] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none" />
+          <div class="text-[11px] text-gray-400">
+            Active GIF converted from <code class="text-cyan-300">banner-ezgif.com-gif-to-mp4-converter.mp4</code>.
+          </div>
+        </div>
+
+        <!-- 7. Buttons Builder -->
+        <div class="bg-[#2b2d31] p-3 rounded-lg border border-[#383a40] space-y-2.5">
+          <label class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square text-cyan-400"></i> 6. Action Row Link Buttons (Style 5)
+          </label>
+          
+          <span class="text-[10px] text-gray-400 block font-semibold uppercase tracking-wider">Row 1 (Top Action Row):</span>
+          <div class="grid grid-cols-12 gap-1.5">
+            <input id="ctrl-b1-icon" value="🗳️" oninput="updateFromJsonOrVisual(false)" class="col-span-2 bg-[#1e1f22] border border-[#3f4147] text-center rounded px-1 py-1 text-xs text-white" title="Emoji" />
+            <input id="ctrl-b1-lbl" value="Vote" oninput="updateFromJsonOrVisual(false)" class="col-span-3 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-medium" />
+            <input id="ctrl-b1-url" value="https://www.arcturusmc.org/vote" oninput="updateFromJsonOrVisual(false)" class="col-span-7 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-mono" />
+          </div>
+          <div class="grid grid-cols-12 gap-1.5">
+            <input id="ctrl-b2-icon" value="🛒" oninput="updateFromJsonOrVisual(false)" class="col-span-2 bg-[#1e1f22] border border-[#3f4147] text-center rounded px-1 py-1 text-xs text-white" title="Emoji" />
+            <input id="ctrl-b2-lbl" value="Store" oninput="updateFromJsonOrVisual(false)" class="col-span-3 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-medium" />
+            <input id="ctrl-b2-url" value="https://store.arcturusmc.org" oninput="updateFromJsonOrVisual(false)" class="col-span-7 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-mono" />
+          </div>
+          <div class="grid grid-cols-12 gap-1.5">
+            <input id="ctrl-b3-icon" value="💬" oninput="updateFromJsonOrVisual(false)" class="col-span-2 bg-[#1e1f22] border border-[#3f4147] text-center rounded px-1 py-1 text-xs text-white" title="Emoji" />
+            <input id="ctrl-b3-lbl" value="Discord" oninput="updateFromJsonOrVisual(false)" class="col-span-3 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-medium" />
+            <input id="ctrl-b3-url" value="https://discord.gg/DTR6serkeM" oninput="updateFromJsonOrVisual(false)" class="col-span-7 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-mono" />
+          </div>
+
+          <span class="text-[10px] text-gray-400 block font-semibold uppercase tracking-wider mt-2">Row 2 (Secondary Action Row):</span>
+          <div class="grid grid-cols-12 gap-1.5">
+            <input id="ctrl-b4-icon" value="🎬" oninput="updateFromJsonOrVisual(false)" class="col-span-2 bg-[#1e1f22] border border-[#3f4147] text-center rounded px-1 py-1 text-xs text-white" title="Emoji" />
+            <input id="ctrl-b4-lbl" value="Watch Trailer" oninput="updateFromJsonOrVisual(false)" class="col-span-3 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-medium" />
+            <input id="ctrl-b4-url" value="https://www.youtube.com/watch?v=kPjvbbAWTJ0" oninput="updateFromJsonOrVisual(false)" class="col-span-7 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-mono" />
+          </div>
+          <div class="grid grid-cols-12 gap-1.5">
+            <input id="ctrl-b5-icon" value="🌐" oninput="updateFromJsonOrVisual(false)" class="col-span-2 bg-[#1e1f22] border border-[#3f4147] text-center rounded px-1 py-1 text-xs text-white" title="Emoji" />
+            <input id="ctrl-b5-lbl" value="Official Website" oninput="updateFromJsonOrVisual(false)" class="col-span-3 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-medium" />
+            <input id="ctrl-b5-url" value="https://www.arcturusmc.org/" oninput="updateFromJsonOrVisual(false)" class="col-span-7 bg-[#1e1f22] border border-[#3f4147] rounded px-2 py-1 text-xs text-white font-mono" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB B: RAW JSON CODE EDITOR -->
+      <div id="editor-view-json" class="hidden flex-1 flex flex-col p-3 bg-[#1e1f22]">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-gray-400 font-mono">Payload Schema: PR #8606</span>
+          <span id="json-byte-counter" class="text-xs font-mono text-cyan-400">0 bytes</span>
+        </div>
+        <textarea id="raw-json-editor" spellcheck="false" oninput="onJsonEditorChange()" class="flex-1 w-full bg-[#111214] border border-[#3f4147] rounded p-3 font-mono text-xs text-[#2dc770] leading-relaxed focus:border-cyan-400 outline-none resize-none"></textarea>
+      </div>
+
+      <!-- TAB C: MARKDOWN CHEATSHEET -->
+      <div id="editor-view-cheatsheet" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs leading-relaxed">
+        <h2 class="font-bold text-white text-sm">Discord Markdown Reference</h2>
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-[#3f4147] text-gray-400 font-mono text-[11px]">
+              <th class="py-1">Syntax</th>
+              <th class="py-1">Output</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#383a40]">
+            <tr><td class="py-1.5 font-mono text-cyan-300">**bold text**</td><td class="py-1.5 font-bold text-white">bold text</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">*italic text*</td><td class="py-1.5 italic text-gray-200">italic text</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">__underlined__</td><td class="py-1.5 underline">underlined</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">~~strikethrough~~</td><td class="py-1.5 line-through text-gray-400">strikethrough</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">`inline code`</td><td class="py-1.5 font-mono text-emerald-400 bg-[#111214] px-1 rounded">code</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">&gt; blockquote</td><td class="py-1.5 border-l-2 border-gray-400 pl-2">quote</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">[Label](https://url)</td><td class="py-1.5 text-[#00a8fc] underline">clickable link</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">||spoiler||</td><td class="py-1.5 bg-[#202225] px-1 rounded text-transparent">spoiler</td></tr>
+            <tr><td class="py-1.5 font-mono text-cyan-300">- bullet list</td><td class="py-1.5">• list item</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANE: PIXEL-PERFECT DISCORD CLIENT SIMULATION -->
+    <section class="flex-1 flex flex-col bg-[#2b2d31] overflow-hidden">
+      
+      <!-- Simulation Controls Bar -->
+      <div class="h-10 bg-[#1f2023] flex items-center justify-between px-4 border-b border-[#2b2d31] shrink-0 text-xs">
+        <div class="flex items-center gap-3">
+          <span class="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Client Simulator:</span>
+          <div class="flex items-center bg-[#2b2d31] rounded p-0.5 border border-[#383a40]">
+            <button id="sim-view-desktop" onclick="setSimView('desktop')" class="px-2.5 py-0.5 rounded text-white bg-cyan-600 font-medium">
+              <i class="fa-solid fa-desktop mr-1"></i> Desktop
+            </button>
+            <button id="sim-view-mobile" onclick="setSimView('mobile')" class="px-2.5 py-0.5 rounded text-gray-400 hover:text-white font-medium">
+              <i class="fa-solid fa-mobile-screen mr-1"></i> Mobile
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Theme:</span>
+          <div class="flex items-center bg-[#2b2d31] rounded p-0.5 border border-[#383a40]">
+            <button id="sim-theme-dark" onclick="setSimTheme('dark')" class="px-2.5 py-0.5 rounded text-white bg-[#383a40] font-medium">Dark</button>
+            <button id="sim-theme-midnight" onclick="setSimTheme('midnight')" class="px-2.5 py-0.5 rounded text-gray-400 hover:text-white font-medium">Midnight</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCORD APP WINDOW -->
+      <div class="flex-1 overflow-y-auto flex items-center justify-center p-4 sm:p-6 bg-[#18191c]">
+        
+        <!-- Frame Wrapper (changes width for desktop vs mobile) -->
+        <div id="discord-sim-window" class="w-full max-w-[620px] rounded-xl overflow-hidden shadow-2xl border border-[#2b2d31] flex flex-col discord-chat-bg transition-all duration-300">
+          
+          <!-- Mock Channel Header -->
+          <div class="h-12 border-b border-[#232428] px-4 flex items-center justify-between shrink-0 bg-[#2b2d31]">
+            <div class="flex items-center gap-2">
+              <span class="text-gray-400 text-lg">#</span>
+              <span class="font-bold text-white text-sm">link-previews</span>
+              <div class="h-4 w-[1px] bg-[#3f4147] mx-1 hidden sm:block"></div>
+              <span class="text-xs text-gray-400 truncate hidden sm:inline">Component Embed Preview Showcase</span>
+            </div>
+            <div class="flex items-center gap-3 text-gray-400 text-sm">
+              <i class="fa-solid fa-bell cursor-pointer hover:text-gray-200"></i>
+              <i class="fa-solid fa-thumbtack cursor-pointer hover:text-gray-200"></i>
+              <i class="fa-solid fa-user-group cursor-pointer hover:text-gray-200"></i>
+              <div class="relative">
+                <input type="text" placeholder="Search" class="bg-[#1e1f22] text-xs px-2 py-0.5 rounded w-24 text-gray-200 placeholder-gray-500 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Message History Container -->
+          <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
+            
+            <!-- Date Separator -->
+            <div class="relative flex items-center justify-center my-3">
+              <div class="border-t border-[#3f4147] w-full"></div>
+              <span class="absolute bg-[#313338] px-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                Today at 8:54 PM
+              </span>
+            </div>
+
+            <!-- THE ACTUAL DISCORD MESSAGE -->
+            <div class="flex items-start gap-4 group">
+              
+              <!-- User Avatar -->
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-600 via-teal-600 to-blue-500 flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-md">
+                E
+              </div>
+
+              <!-- Message Body -->
+              <div class="flex-1 min-w-0">
+                
+                <!-- Author line -->
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-bold text-sm text-white hover:underline cursor-pointer">Ecys</span>
+                  <span class="bg-[#5865f2] text-white text-[9px] font-bold px-1 py-0.5 rounded uppercase tracking-wider">APP</span>
+                  <span class="text-xs text-gray-400 font-normal">Today at 8:54 PM</span>
+                </div>
+
+                <!-- Shared Link -->
+                <div class="text-sm mb-2">
+                  <a href="https://arcturusmc.org/" target="_blank" class="text-[#00a8fc] hover:underline font-medium">https://arcturusmc.org/</a>
+                </div>
+
+                <!-- DISCORD UNFURLED COMPONENT EMBED CONTAINER (TYPE 17) -->
+                <div id="sim-embed-card" class="discord-embed-card space-y-2.5">
+                  
+                  <!-- 1. Top Hero Banner (Type 12 Media Gallery) -->
+                  <div id="sim-hero-box" class="rounded-lg overflow-hidden bg-[#1e1f22]">
+                    <img id="sim-hero-img" src="https://www.arcturusmc.org/images/arcturus-night.webp" alt="Hero Banner" class="w-full object-cover max-h-56 select-none" />
+                  </div>
+
+                  <!-- 2. Decorative Divider -->
+                  <div id="sim-divider-1" class="text-[12px] text-center text-cyan-300 font-mono tracking-wider select-none">
+                    ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️
+                  </div>
+
+                  <!-- 3. Section (Type 9) with Thumbnail Accessory (Type 11) -->
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                      <div id="sim-section-title" class="text-base font-bold text-white mb-1 discord-markdown"></div>
+                      <div id="sim-section-desc" class="discord-markdown text-gray-300"></div>
+                    </div>
+                    <div class="shrink-0">
+                      <img id="sim-thumb-img" src="https://www.arcturusmc.org/assets/logo.png" alt="Server Logo" class="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg bg-[#1e1f22] border border-[#3f4147] p-1.5 shadow" />
+                    </div>
+                  </div>
+
+                  <!-- 4. Trailer Showcase Banner (Type 12 Media Gallery) -->
+                  <div id="sim-trailer-box" class="relative rounded-lg overflow-hidden bg-[#1e1f22] group cursor-pointer" onclick="window.open(document.getElementById('ctrl-yt-url').value, '_blank')">
+                    <img id="sim-trailer-img" src="https://www.arcturusmc.org/images/trailer.jpg" alt="Trailer Banner" class="w-full object-cover max-h-52 select-none" />
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity">
+                      <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-play ml-0.5 text-lg"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 5. Trailer Caption (Type 10 Text Display) -->
+                  <div id="sim-trailer-caption" class="text-xs text-center text-gray-400 discord-markdown italic"></div>
+
+                  <!-- 6. Decorative Divider -->
+                  <div id="sim-divider-2" class="text-[12px] text-center text-cyan-300 font-mono tracking-wider select-none">
+                    ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️
+                  </div>
+
+                  <!-- 7. Server Stats Box (Type 10 Text Display / Code Block) -->
+                  <div id="sim-stats-box" class="discord-markdown"></div>
+
+                  <!-- 8. Animated Server Banner (Type 12 Media Gallery) -->
+                  <div id="sim-banner-box" class="rounded overflow-hidden border border-[#3f4147] bg-[#1e1f22] flex justify-center p-1">
+                    <img id="sim-banner-img" src="https://www.arcturusmc.org/images/banner.gif" alt="Server Banner" class="max-w-full h-auto rounded select-none" />
+                  </div>
+
+                  <!-- 9. Spacing Divider (Type 14 Separator) -->
+                  <div class="border-t border-[#3f4147]/80 my-1"></div>
+
+                  <!-- 10. Action Row 1 (Type 1, 3 Link Buttons) -->
+                  <div id="sim-row-1" class="grid grid-cols-3 gap-2">
+                    <a id="sim-btn-1" href="https://www.arcturusmc.org/vote" target="_blank" class="discord-link-btn">
+                      <span id="sim-btn-1-icon">🗳️</span>
+                      <span id="sim-btn-1-lbl">Vote</span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400 ml-0.5"></i>
+                    </a>
+                    <a id="sim-btn-2" href="https://store.arcturusmc.org" target="_blank" class="discord-link-btn">
+                      <span id="sim-btn-2-icon">🛒</span>
+                      <span id="sim-btn-2-lbl">Store</span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400 ml-0.5"></i>
+                    </a>
+                    <a id="sim-btn-3" href="https://discord.gg/DTR6serkeM" target="_blank" class="discord-link-btn">
+                      <span id="sim-btn-3-icon">💬</span>
+                      <span id="sim-btn-3-lbl">Discord</span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400 ml-0.5"></i>
+                    </a>
+                  </div>
+
+                  <!-- 11. Action Row 2 (Type 1, 2 Link Buttons) -->
+                  <div id="sim-row-2" class="grid grid-cols-2 gap-2">
+                    <a id="sim-btn-4" href="https://www.youtube.com/watch?v=kPjvbbAWTJ0" target="_blank" class="discord-link-btn">
+                      <span id="sim-btn-4-icon">🎬</span>
+                      <span id="sim-btn-4-lbl">Watch Trailer</span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400 ml-0.5"></i>
+                    </a>
+                    <a id="sim-btn-5" href="https://www.arcturusmc.org/" target="_blank" class="discord-link-btn">
+                      <span id="sim-btn-5-icon">🌐</span>
+                      <span id="sim-btn-5-lbl">Official Website</span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400 ml-0.5"></i>
+                    </a>
+                  </div>
+
+                  <!-- 12. Bottom Decorative Divider -->
+                  <div id="sim-divider-3" class="text-[12px] text-center text-cyan-300 font-mono tracking-wider select-none">
+                    ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Mock Discord Chat Input Bar -->
+          <div class="p-3 bg-[#313338] border-t border-[#2b2d31] shrink-0">
+            <div class="bg-[#383a40] rounded-lg px-3 py-2.5 flex items-center justify-between text-gray-400 text-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-[#4e5058] flex items-center justify-center text-white text-xs cursor-pointer hover:bg-[#6d6f78]">
+                  <i class="fa-solid fa-circle-plus"></i>
+                </div>
+                <span class="text-xs text-gray-400 select-none">Message #link-previews</span>
+              </div>
+              <div class="flex items-center gap-3 text-gray-400">
+                <i class="fa-solid fa-gift cursor-pointer hover:text-gray-200"></i>
+                <span class="text-[10px] font-bold border border-gray-500 px-1 rounded cursor-pointer hover:text-gray-200">GIF</span>
+                <i class="fa-regular fa-face-smile cursor-pointer hover:text-gray-200"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT ENGINE -->
+  <script>
+    let currentColorHex = '#18cfdc';
+    let currentColorInt = 1626076;
+
+    // Discord Markdown Parser
+    function parseDiscordMarkdown(text) {
+      if (!text) return '';
+
+      // Escape HTML entities first to prevent injection
+      let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks ```yaml ... ```
+      html = html.replace(/```(?:[a-zA-Z0-9_-]+)?\n?([\s\S]*?)```/g, (m, code) => {
+        return `<div class="discord-code-block"><code>${code.trim()}</code></div>`;
+      });
+
+      // Inline code `code`
+      html = html.replace(/`([^`\n]+)`/g, '<span class="discord-code-inline">$1</span>');
+
+      // Blockquotes > quote
+      html = html.replace(/^&gt; (.*)$/gm, '<div class="discord-blockquote">$1</div>');
+
+      // Headings
+      html = html.replace(/^### (.*)$/gm, '<h3 class="text-xs font-bold text-white mt-1 mb-0.5">$1</h3>');
+      html = html.replace(/^## (.*)$/gm, '<h2 class="text-sm font-bold text-white mt-1.5 mb-0.5">$1</h2>');
+      html = html.replace(/^# (.*)$/gm, '<h1 class="text-base font-bold text-white mt-1.5 mb-0.5">$1</h1>');
+
+      // Bullet lists
+      html = html.replace(/^- (.*)$/gm, '<div class="flex items-start gap-1.5 ml-1 text-gray-300"><span class="text-gray-400">•</span><span>$1</span></div>');
+
+      // Links [text](url)
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" class="text-[#00a8fc] hover:underline font-semibold">$1</a>');
+
+      // Spoilers ||text||
+      html = html.replace(/\|\|(.*?)\|\|/g, '<span class="discord-spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+
+      // Bold + Italic ***text*** or ___text___
+      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong class="font-bold text-white"><em class="italic">$1</em></strong>');
+      html = html.replace(/___(.+?)___/g, '<u class="underline"><em class="italic">$1</em></u>');
+
+      // Bold **text**
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-white">$1</strong>');
+
+      // Underline __text__
+      html = html.replace(/__(.+?)__/g, '<u class="underline underline-offset-2">$1</u>');
+
+      // Italic *text* or _text_
+      html = html.replace(/\*([^*\n]+)\*/g, '<em class="italic text-gray-200">$1</em>');
+      html = html.replace(/_([^_\n]+)_/g, '<em class="italic text-gray-200">$1</em>');
+
+      // Strikethrough ~~text~~
+      html = html.replace(/~~(.+?)~~/g, '<del class="line-through text-gray-400">$1</del>');
+
+      // Convert newlines to <br />
+      html = html.replace(/\n/g, '<br />');
+
+      return html;
+    }
+
+    // Switch between editor tabs
+    function switchEditorTab(tab) {
+      document.getElementById('editor-view-visual').classList.toggle('hidden', tab !== 'visual');
+      document.getElementById('editor-view-json').classList.toggle('hidden', tab !== 'json');
+      document.getElementById('editor-view-cheatsheet').classList.toggle('hidden', tab !== 'cheatsheet');
+
+      // Tab button styling
+      const tabs = ['visual', 'json', 'cheatsheet'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          btn.className = "px-3 py-1 text-xs font-semibold rounded bg-[#1e1f22] text-cyan-400 border-t-2 border-cyan-400 flex items-center gap-1.5";
+        } else {
+          btn.className = "px-3 py-1 text-xs font-semibold rounded text-gray-400 hover:text-gray-200 flex items-center gap-1.5";
+        }
+      });
+
+      if (tab === 'json') {
+        syncVisualToJson();
+      }
+    }
+
+    // Presets
+    function setHeroPreset(path) {
+      document.getElementById('ctrl-hero-img').value = `https://www.arcturusmc.org${path}`;
+      updateFromJsonOrVisual(false);
+    }
+
+    function insertVisualTag(before, after) {
+      const textarea = document.getElementById('ctrl-section-desc');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const selected = text.substring(start, end) || 'text';
+      textarea.value = text.substring(0, start) + before + selected + after + text.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, start + before.length + selected.length);
+      updateFromJsonOrVisual(false);
+    }
+
+    function onVisualColorChange(hex) {
+      currentColorHex = hex;
+      document.getElementById('ctrl-color-hex').value = hex;
+      updateFromJsonOrVisual(false);
+    }
+
+    function onVisualHexChange(hex) {
+      if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+        currentColorHex = hex;
+        document.getElementById('ctrl-color-picker').value = hex;
+        updateFromJsonOrVisual(false);
+      }
+    }
+
+    // Build payload from visual inputs
+    function buildPayloadFromVisual() {
+      currentColorInt = parseInt(currentColorHex.replace('#', ''), 16);
+      document.getElementById('color-int-display').textContent = `int: ${currentColorInt}`;
+
+      const divider = "❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️";
+      const sectionTitle = document.getElementById('ctrl-section-title').value;
+      const sectionDesc = document.getElementById('ctrl-section-desc').value;
+
+      return {
+        component: {
+          type: 17,
+          accent_color: currentColorInt,
+          components: [
+            {
+              type: 12,
+              items: [
+                {
+                  media: { url: document.getElementById('ctrl-hero-img').value },
+                  description: "ArcturusMC Moonlit Spawn"
+                }
+              ]
+            },
+            { type: 10, content: divider },
+            {
+              type: 9,
+              components: [
+                { type: 10, content: `${sectionTitle}\n${sectionDesc}` }
+              ],
+              accessory: {
+                type: 11,
+                media: { url: document.getElementById('ctrl-thumb-img').value }
+              }
+            },
+            {
+              type: 12,
+              items: [
+                {
+                  media: { url: document.getElementById('ctrl-trailer-img').value },
+                  description: "Arcturus Factions Reimagined Trailer"
+                }
+              ]
+            },
+            { type: 10, content: document.getElementById('ctrl-trailer-caption').value },
+            { type: 10, content: divider },
+            { type: 10, content: document.getElementById('ctrl-stats-box').value },
+            {
+              type: 12,
+              items: [
+                {
+                  media: { url: document.getElementById('ctrl-banner-gif').value },
+                  description: "play.arcturusmc.org"
+                }
+              ]
+            },
+            { type: 14, spacing: 1 },
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('ctrl-b1-url').value,
+                  label: document.getElementById('ctrl-b1-lbl').value,
+                  emoji: { name: document.getElementById('ctrl-b1-icon').value }
+                },
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('ctrl-b2-url').value,
+                  label: document.getElementById('ctrl-b2-lbl').value,
+                  emoji: { name: document.getElementById('ctrl-b2-icon').value }
+                },
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('ctrl-b3-url').value,
+                  label: document.getElementById('ctrl-b3-lbl').value,
+                  emoji: { name: document.getElementById('ctrl-b3-icon').value }
+                }
+              ]
+            },
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('ctrl-b4-url').value,
+                  label: document.getElementById('ctrl-b4-lbl').value,
+                  emoji: { name: document.getElementById('ctrl-b4-icon').value }
+                },
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('ctrl-b5-url').value,
+                  label: document.getElementById('ctrl-b5-lbl').value,
+                  emoji: { name: document.getElementById('ctrl-b5-icon').value }
+                }
+              ]
+            },
+            { type: 10, content: divider }
+          ]
+        }
+      };
+    }
+
+    // Render Payload into Simulator
+    function renderSimulator(payload) {
+      if (!payload || !payload.component) return;
+      const comp = payload.component;
+
+      // 1. Accent Border Color
+      if (comp.accent_color !== undefined) {
+        const hex = '#' + comp.accent_color.toString(16).padStart(6, '0');
+        document.getElementById('sim-embed-card').style.borderLeftColor = hex;
+      }
+
+      // 2. Extract and render parts
+      const items = comp.components || [];
+
+      // Hero image
+      const heroComp = items.find(c => c.type === 12 && c.items?.[0]?.media?.url);
+      if (heroComp) {
+        document.getElementById('sim-hero-img').src = heroComp.items[0].media.url;
+      }
+
+      // Section (Type 9)
+      const secComp = items.find(c => c.type === 9);
+      if (secComp) {
+        const secText = secComp.components?.[0]?.content || '';
+        const lines = secText.split('\n');
+        const titleLine = lines[0] || '';
+        const descLines = lines.slice(1).join('\n');
+
+        document.getElementById('sim-section-title').innerHTML = parseDiscordMarkdown(titleLine);
+        document.getElementById('sim-section-desc').innerHTML = parseDiscordMarkdown(descLines);
+
+        if (secComp.accessory?.media?.url) {
+          document.getElementById('sim-thumb-img').src = secComp.accessory.media.url;
+        }
+      }
+
+      // Trailer Showcase
+      const allGalleries = items.filter(c => c.type === 12);
+      if (allGalleries.length > 1 && allGalleries[1].items?.[0]?.media?.url) {
+        document.getElementById('sim-trailer-img').src = allGalleries[1].items[0].media.url;
+      }
+
+      // Trailer Caption
+      const trailerCapComp = items[4];
+      if (trailerCapComp && trailerCapComp.type === 10) {
+        document.getElementById('sim-trailer-caption').innerHTML = parseDiscordMarkdown(trailerCapComp.content);
+      }
+
+      // Stats Box
+      const statsComp = items.find(c => c.type === 10 && c.content?.includes('play.arcturusmc.org'));
+      if (statsComp) {
+        document.getElementById('sim-stats-box').innerHTML = parseDiscordMarkdown(statsComp.content);
+      }
+
+      // Banner GIF
+      if (allGalleries.length > 2 && allGalleries[2].items?.[0]?.media?.url) {
+        document.getElementById('sim-banner-img').src = allGalleries[2].items[0].media.url;
+      }
+
+      // Buttons
+      const actionRows = items.filter(c => c.type === 1);
+      let btnIdx = 1;
+      actionRows.forEach(row => {
+        (row.components || []).forEach(btn => {
+          if (btnIdx <= 5) {
+            document.getElementById(`sim-btn-${btnIdx}-icon`).textContent = btn.emoji?.name || '';
+            document.getElementById(`sim-btn-${btnIdx}-lbl`).textContent = btn.label || '';
+            document.getElementById(`sim-btn-${btnIdx}`).href = btn.url || '#';
+            btnIdx++;
+          }
+        });
+      });
+    }
+
+    // Update everything
+    function updateFromJsonOrVisual(isJsonSource) {
+      if (isJsonSource) {
+        try {
+          const payload = JSON.parse(document.getElementById('raw-json-editor').value);
+          renderSimulator(payload);
+          updateByteCounter();
+          setSaveStatus('Modified (Not saved)');
+        } catch (e) {
+          // JSON invalid while typing, skip rendering
+        }
+      } else {
+        const payload = buildPayloadFromVisual();
+        renderSimulator(payload);
+        document.getElementById('raw-json-editor').value = JSON.stringify(payload, null, 2);
+        updateByteCounter();
+        setSaveStatus('Modified (Not saved)');
+      }
+    }
+
+    function syncVisualToJson() {
+      const payload = buildPayloadFromVisual();
+      document.getElementById('raw-json-editor').value = JSON.stringify(payload, null, 2);
+      updateByteCounter();
+    }
+
+    function onJsonEditorChange() {
+      updateFromJsonOrVisual(true);
+    }
+
+    function updateByteCounter() {
+      const str = document.getElementById('raw-json-editor').value;
+      const bytes = new Blob([str]).size;
+      const counter = document.getElementById('json-byte-counter');
+      counter.textContent = `${bytes} bytes (Limit: 3000)`;
+      counter.className = bytes > 3000 ? "text-xs font-mono text-rose-400 font-bold" : "text-xs font-mono text-cyan-400";
+    }
+
+    function formatJson() {
+      try {
+        const parsed = JSON.parse(document.getElementById('raw-json-editor').value);
+        document.getElementById('raw-json-editor').value = JSON.stringify(parsed, null, 2);
+        updateByteCounter();
+      } catch (e) {
+        alert("Invalid JSON syntax: " + e.message);
+      }
+    }
+
+    // Save directly to index.html & discord-embed.json via API
+    async function saveToFiles() {
+      const btn = document.getElementById('btn-save');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      try {
+        let payload;
+        try {
+          payload = JSON.parse(document.getElementById('raw-json-editor').value);
+        } catch (e) {
+          payload = buildPayloadFromVisual();
+        }
+
+        const res = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+          btn.className = 'px-3 py-1 text-xs font-semibold text-white bg-emerald-600 rounded shadow transition flex items-center gap-1.5';
+          setSaveStatus('Saved to index.html & discord-embed.json');
+          setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save to Website';
+            btn.className = 'px-3 py-1 text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 rounded shadow transition flex items-center gap-1.5';
+            btn.disabled = false;
+          }, 2000);
+        } else {
+          alert('Error saving: ' + data.error);
+          btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Could not contact studio server: ' + err.message);
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save to Website';
+        btn.disabled = false;
+      }
+    }
+
+    // Git push via API
+    async function pushToGit() {
+      const btn = document.getElementById('btn-push');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Pushing...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: "Update Discord Component Embed from Studio" })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Pushed!';
+          btn.className = 'px-3 py-1 text-xs font-semibold text-white bg-emerald-600 rounded shadow transition flex items-center gap-1.5';
+          setSaveStatus('Pushed to GitHub (newgen branch)');
+          setTimeout(() => {
+            btn.innerHTML = '<i class="fa-brands fa-github"></i> Git Push';
+            btn.className = 'px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded shadow transition flex items-center gap-1.5';
+            btn.disabled = false;
+          }, 2500);
+        } else {
+          alert('Git push failed: ' + data.error);
+          btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Failed';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Git push error: ' + err.message);
+        btn.innerHTML = '<i class="fa-brands fa-github"></i> Git Push';
+        btn.disabled = false;
+      }
+    }
+
+    function setSaveStatus(msg) {
+      document.getElementById('save-status-text').textContent = msg;
+    }
+
+    // Switch view modes (desktop vs mobile)
+    function setSimView(view) {
+      const win = document.getElementById('discord-sim-window');
+      const card = document.getElementById('sim-embed-card');
+      const bDesktop = document.getElementById('sim-view-desktop');
+      const bMobile = document.getElementById('sim-view-mobile');
+
+      if (view === 'mobile') {
+        win.style.maxWidth = '380px';
+        card.style.maxWidth = '100%';
+        bMobile.className = 'px-2.5 py-0.5 rounded text-white bg-cyan-600 font-medium';
+        bDesktop.className = 'px-2.5 py-0.5 rounded text-gray-400 hover:text-white font-medium';
+      } else {
+        win.style.maxWidth = '620px';
+        card.style.maxWidth = '432px';
+        bDesktop.className = 'px-2.5 py-0.5 rounded text-white bg-cyan-600 font-medium';
+        bMobile.className = 'px-2.5 py-0.5 rounded text-gray-400 hover:text-white font-medium';
+      }
+    }
+
+    // Switch theme (dark vs midnight)
+    function setSimTheme(theme) {
+      const win = document.getElementById('discord-sim-window');
+      const bDark = document.getElementById('sim-theme-dark');
+      const bMid = document.getElementById('sim-theme-midnight');
+
+      if (theme === 'midnight') {
+        win.classList.add('theme-midnight');
+        bMid.className = 'px-2.5 py-0.5 rounded text-white bg-[#383a40] font-medium';
+        bDark.className = 'px-2.5 py-0.5 rounded text-gray-400 hover:text-white font-medium';
+      } else {
+        win.classList.remove('theme-midnight');
+        bDark.className = 'px-2.5 py-0.5 rounded text-white bg-[#383a40] font-medium';
+        bMid.className = 'px-2.5 py-0.5 rounded text-gray-400 hover:text-white font-medium';
+      }
+    }
+
+    // Initialize
+    updateFromJsonOrVisual(false);
+    setSaveStatus('Synced with local files');
+  </script>
+</body>
+</html>
