@@ -33,24 +33,59 @@
       border-color: #18cfdc;
       outline: none;
     }
+    .markdown-content {
+      word-break: break-word;
+      line-height: 1.45;
+    }
+    .spoiler-tag {
+      background-color: #202225;
+      color: transparent;
+      border-radius: 3px;
+      padding: 1px 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .spoiler-tag.revealed {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #f2f3f5;
+      user-select: text;
+    }
+    .fmt-btn {
+      background-color: #2b2d31;
+      border: 1px solid #3f4147;
+      color: #b5bac1;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.1s ease;
+    }
+    .fmt-btn:hover {
+      background-color: #383a40;
+      color: #fff;
+      border-color: #18cfdc;
+    }
   </style>
 </head>
 <body class="bg-[#1e1f22] text-gray-100 min-h-screen p-4 md:p-8">
   <div class="max-w-6xl mx-auto">
     
     <!-- Studio Header -->
-    <div class="flex items-center justify-between mb-6 pb-4 border-b border-[#3f4147]">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[#3f4147]">
       <div>
         <h1 class="text-xl md:text-2xl font-bold text-white flex items-center gap-2.5">
           <span class="text-cyan-400">⚡</span> Arcturus Discord Link Preview Studio
         </h1>
         <p class="text-xs text-gray-400 mt-1">
-          Edit your Discord Components V2 preview in real-time. Changes to the fields on the left reflect immediately on the right.
+          Real-time Discord Components V2 markdown editor. Typing updates the live preview instantly with native bold, italic, spoilers, and line breaks.
         </p>
       </div>
-      <button onclick="copyFullScript()" id="copy-script-btn" class="px-3.5 py-2 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow transition flex items-center gap-2">
-        <span>📋 Copy &lt;script&gt; for index.html</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="copyFullScript()" id="copy-script-btn" class="px-3.5 py-2 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow transition flex items-center gap-2">
+          <span>📋 Copy &lt;script&gt; Tag</span>
+        </button>
+      </div>
     </div>
 
     <!-- 2-Column Real-Time Grid -->
@@ -58,18 +93,18 @@
       
       <!-- LEFT: Real-Time Editor Form (5 cols) -->
       <div class="lg:col-span-5 discord-bg rounded-xl p-5 shadow-xl border border-[#2b2d31] space-y-4">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center justify-between">
-          <span>Real-Time Editor</span>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center justify-between">
+          <span>Markdown Editor</span>
           <span class="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Sync
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Markdown Sync
           </span>
         </h2>
 
         <!-- Title & Color -->
         <div class="grid grid-cols-3 gap-2">
           <div class="col-span-2">
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Title</label>
-            <input id="input-title" type="text" value="ArcturusMC Factions & KitPvP" class="w-full px-3 py-2 rounded text-xs" oninput="updateLive()" />
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Title (Markdown enabled)</label>
+            <input id="input-title" type="text" value="**[ArcturusMC Factions & KitPvP](https://www.arcturusmc.org/)**" class="w-full px-3 py-2 rounded text-xs font-mono" oninput="updateLive()" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-300 mb-1">Accent Color</label>
@@ -80,10 +115,27 @@
           </div>
         </div>
 
-        <!-- Description -->
+        <!-- Description with Markdown Toolbar -->
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1">Description / Blurb (Markdown)</label>
-          <textarea id="input-blurb" rows="3" class="w-full px-3 py-2 rounded text-xs leading-relaxed" oninput="updateLive()">ArcturusMC is a cracked Minecraft Java+Bedrock server supporting 1.8–26.2 clients. We have monthly FactionsTop payouts, easy-to-learn custom enchants, and pet pvp.</textarea>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-gray-300">Blurb / Description</label>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="insertFmt('**', '**')" class="fmt-btn" title="Bold">B</button>
+              <button type="button" onclick="insertFmt('*', '*')" class="fmt-btn italic" title="Italic">I</button>
+              <button type="button" onclick="insertFmt('__', '__')" class="fmt-btn underline" title="Underline">U</button>
+              <button type="button" onclick="insertFmt('~~', '~~')" class="fmt-btn line-through" title="Strikethrough">S</button>
+              <button type="button" onclick="insertFmt('`', '`')" class="fmt-btn font-mono" title="Code">&lt;&gt;</button>
+              <button type="button" onclick="insertFmt('[', '](https://...)')" class="fmt-btn" title="Link">🔗</button>
+              <button type="button" onclick="insertFmt('||', '||')" class="fmt-btn" title="Spoiler">||</button>
+              <button type="button" onclick="insertFmt('\n- ', '')" class="fmt-btn" title="Bullet List">• List</button>
+            </div>
+          </div>
+          <textarea id="input-blurb" rows="5" class="w-full px-3 py-2.5 rounded text-xs leading-relaxed font-mono" oninput="updateLive()">ArcturusMC is a **cracked Minecraft Java+Bedrock** server supporting 1.8–26.2 clients.
+
+We have:
+- **Monthly FactionsTop payouts** ($100 real money)
+- **Easy-to-learn custom enchants** (/enchanter)
+- **Pet PvP & custom cannons**</textarea>
         </div>
 
         <!-- Image URL -->
@@ -133,8 +185,8 @@
         <!-- Live Discord Simulation Card -->
         <div class="discord-bg rounded-xl p-5 shadow-xl border border-[#2b2d31]">
           <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center justify-between">
-            <span>Discord Client Preview</span>
-            <span class="text-[11px] text-gray-500">Components V2 Unfurl</span>
+            <span>Discord Client Live Simulation</span>
+            <span class="text-[11px] text-gray-500">Components V2 Embed</span>
           </h2>
 
           <!-- Message Header -->
@@ -157,14 +209,12 @@
               
               <!-- Text Display -->
               <div class="mb-3">
-                <h1 class="text-lg font-bold text-white mb-1 hover:underline cursor-pointer">
-                  <a id="preview-title-link" href="https://www.arcturusmc.org/" target="_blank" class="text-white hover:text-cyan-300">
-                    ArcturusMC Factions &amp; KitPvP
-                  </a>
-                </h1>
-                <p id="preview-blurb" class="text-sm text-gray-300 leading-relaxed">
-                  ArcturusMC is a cracked Minecraft Java+Bedrock server supporting 1.8–26.2 clients. We have monthly FactionsTop payouts, easy-to-learn custom enchants, and pet pvp.
-                </p>
+                <div id="preview-title" class="text-lg font-bold text-white mb-2 markdown-content">
+                  <!-- Parsed Markdown -->
+                </div>
+                <div id="preview-blurb" class="text-sm text-gray-300 markdown-content space-y-1">
+                  <!-- Parsed Markdown -->
+                </div>
               </div>
 
               <!-- Media Gallery -->
@@ -208,7 +258,7 @@
         <!-- Real-Time Generated JSON View -->
         <div class="discord-bg rounded-xl p-4 shadow-xl border border-[#2b2d31]">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs text-gray-300 font-bold uppercase tracking-wider">Live Generated JSON</span>
+            <span class="text-xs text-gray-300 font-bold uppercase tracking-wider">Live Generated JSON Payload</span>
             <button onclick="copyJson()" id="copy-json-btn" class="px-2.5 py-1 text-xs bg-[#4e5058] hover:bg-[#6d6f78] text-white rounded font-medium transition">
               Copy JSON
             </button>
@@ -225,6 +275,75 @@
   <script>
     let currentColorHex = '#18cfdc';
     let currentColorInt = 1626076;
+
+    function parseDiscordMarkdown(text) {
+      if (!text) return '';
+
+      let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks ```code```
+      html = html.replace(/```(?:[a-zA-Z0-9_-]+)?\n?([\s\S]*?)```/g, (m, code) => {
+        return `<pre class="bg-[#1e1f22] p-2 rounded text-xs font-mono text-gray-200 my-1 overflow-x-auto"><code>${code.trim()}</code></pre>`;
+      });
+
+      // Inline code `code`
+      html = html.replace(/`([^`\n]+)`/g, '<code class="bg-[#1e1f22] px-1 py-0.5 rounded text-[11px] font-mono text-emerald-300">$1</code>');
+
+      // Blockquotes > quote
+      html = html.replace(/^&gt; (.*)$/gm, '<div class="border-l-4 border-[#4e5058] pl-2 text-gray-400 my-0.5">$1</div>');
+
+      // Headings
+      html = html.replace(/^### (.*)$/gm, '<h3 class="text-xs font-bold text-white mt-1 mb-0.5">$1</h3>');
+      html = html.replace(/^## (.*)$/gm, '<h2 class="text-sm font-bold text-white mt-1.5 mb-0.5">$1</h2>');
+      html = html.replace(/^# (.*)$/gm, '<h1 class="text-base font-bold text-white mt-1.5 mb-0.5">$1</h1>');
+
+      // Bullet lists
+      html = html.replace(/^- (.*)$/gm, '<div class="flex items-start gap-1.5 ml-1 text-gray-300"><span class="text-gray-400">•</span><span>$1</span></div>');
+
+      // Links [text](url)
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" class="text-[#00a8fc] hover:underline font-semibold">$1</a>');
+
+      // Spoilers ||text||
+      html = html.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler-tag" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+
+      // Bold + Italic ***text*** or ___text___
+      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong class="font-bold text-white"><em class="italic">$1</em></strong>');
+      html = html.replace(/___(.+?)___/g, '<u class="underline"><em class="italic">$1</em></u>');
+
+      // Bold **text**
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-white">$1</strong>');
+
+      // Underline __text__
+      html = html.replace(/__(.+?)__/g, '<u class="underline underline-offset-2">$1</u>');
+
+      // Italic *text* or _text_
+      html = html.replace(/\*([^*\n]+)\*/g, '<em class="italic text-gray-200">$1</em>');
+      html = html.replace(/_([^_\n]+)_/g, '<em class="italic text-gray-200">$1</em>');
+
+      // Strikethrough ~~text~~
+      html = html.replace(/~~(.+?)~~/g, '<del class="line-through text-gray-400">$1</del>');
+
+      // Convert newlines to <br />
+      html = html.replace(/\n/g, '<br />');
+
+      return html;
+    }
+
+    function insertFmt(before, after) {
+      const textarea = document.getElementById('input-blurb');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const selected = text.substring(start, end) || 'text';
+      
+      textarea.value = text.substring(0, start) + before + selected + after + text.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, start + before.length + selected.length);
+      updateLive();
+    }
 
     function setImage(url) {
       document.getElementById('input-image').value = url;
@@ -246,8 +365,8 @@
     }
 
     function updateLive() {
-      const title = document.getElementById('input-title').value;
-      const blurb = document.getElementById('input-blurb').value;
+      const rawTitle = document.getElementById('input-title').value;
+      const rawBlurb = document.getElementById('input-blurb').value;
       const imageUrl = document.getElementById('input-image').value;
 
       const btn1Icon = document.getElementById('input-btn-1-icon').value;
@@ -262,8 +381,9 @@
       const btn3Label = document.getElementById('input-btn-3-label').value;
       const btn3Url = document.getElementById('input-btn-3-url').value;
 
-      document.getElementById('preview-title-link').textContent = title;
-      document.getElementById('preview-blurb').textContent = blurb;
+      // Render Markdown in real-time!
+      document.getElementById('preview-title').innerHTML = parseDiscordMarkdown(rawTitle);
+      document.getElementById('preview-blurb').innerHTML = parseDiscordMarkdown(rawBlurb);
       
       const imgEl = document.getElementById('preview-image');
       if (imageUrl && imageUrl.trim()) {
@@ -292,6 +412,16 @@
     }
 
     function generatePayload() {
+      const rawTitle = document.getElementById('input-title').value;
+      const rawBlurb = document.getElementById('input-blurb').value;
+
+      let combinedContent = '';
+      if (rawTitle.startsWith('#')) {
+        combinedContent = `${rawTitle}\n${rawBlurb}`;
+      } else {
+        combinedContent = `# ${rawTitle}\n${rawBlurb}`;
+      }
+
       return {
         "component": {
           "type": 17,
@@ -299,7 +429,7 @@
           "components": [
             {
               "type": 10,
-              "content": `# **[${document.getElementById('input-title').value}](https://www.arcturusmc.org/)**\\n${document.getElementById('input-blurb').value}`
+              "content": combinedContent
             },
             {
               "type": 12,
@@ -370,7 +500,7 @@
         const btn = document.getElementById('copy-script-btn');
         btn.innerHTML = '<span>✅ Copied &lt;script&gt; Tag!</span>';
         setTimeout(() => {
-          btn.innerHTML = '<span>📋 Copy &lt;script&gt; for index.html</span>';
+          btn.innerHTML = '<span>📋 Copy &lt;script&gt; Tag</span>';
         }, 2000);
       });
     }
