@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Arcturus Discord Link Preview Studio</title>
+  <title>Arcturus Discord Link Preview Studio (Grand Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -66,208 +66,314 @@
       color: #fff;
       border-color: #18cfdc;
     }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #2b2d31;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e1f22;
+      border-radius: 3px;
+    }
   </style>
 </head>
-<body class="bg-[#1e1f22] text-gray-100 min-h-screen p-4 md:p-8">
-  <div class="max-w-6xl mx-auto">
+<body class="bg-[#1e1f22] text-[#dbdee1] min-h-screen p-4 sm:p-6 flex flex-col items-center">
+  <div class="w-full max-w-xl discord-bg rounded-xl p-4 sm:p-5 shadow-2xl border border-[#2b2d31]">
     
-    <!-- Studio Header -->
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[#3f4147]">
-      <div>
-        <h1 class="text-xl md:text-2xl font-bold text-white flex items-center gap-2.5">
-          <span class="text-cyan-400">⚡</span> Arcturus Discord Link Preview Studio
-        </h1>
-        <p class="text-xs text-gray-400 mt-1">
-          Real-time Discord Components V2 markdown editor. Typing updates the live preview instantly with native bold, italic, spoilers, and line breaks.
-        </p>
+    <!-- Tab Controls & Header -->
+    <div class="flex items-center justify-between border-b border-[#3f4147] pb-3 mb-4">
+      <div class="flex items-center gap-2">
+        <button id="tab-btn-preview" onclick="showTab('preview')" class="px-3.5 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white transition shadow-sm">
+          👁️ Live Preview
+        </button>
+        <button id="tab-btn-editor" onclick="showTab('editor')" class="px-3.5 py-1.5 text-xs font-semibold rounded bg-[#383a40] hover:bg-[#43454b] text-gray-200 transition">
+          ✏️ Real-Time Editor
+        </button>
+        <button id="tab-btn-code" onclick="showTab('code')" class="px-3.5 py-1.5 text-xs font-semibold rounded bg-[#383a40] hover:bg-[#43454b] text-gray-200 transition">
+          📋 Export JSON
+        </button>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="copyFullScript()" id="copy-script-btn" class="px-3.5 py-2 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow transition flex items-center gap-2">
-          <span>📋 Copy &lt;script&gt; Tag</span>
-        </button>
+        <span class="text-[11px] text-gray-400 font-mono hidden sm:inline">Discord Components V2</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" title="Live Synced"></span>
       </div>
     </div>
 
-    <!-- 2-Column Real-Time Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      
-      <!-- LEFT: Real-Time Editor Form (5 cols) -->
-      <div class="lg:col-span-5 discord-bg rounded-xl p-5 shadow-xl border border-[#2b2d31] space-y-4">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center justify-between">
-          <span>Markdown Editor</span>
-          <span class="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Markdown Sync
-          </span>
-        </h2>
-
-        <!-- Title & Color -->
-        <div class="grid grid-cols-3 gap-2">
-          <div class="col-span-2">
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Title (Markdown enabled)</label>
-            <input id="input-title" type="text" value="**[ArcturusMC Factions & KitPvP](https://www.arcturusmc.org/)**" class="w-full px-3 py-2 rounded text-xs font-mono" oninput="updateLive()" />
+    <!-- TAB 1: PREVIEW -->
+    <div id="tab-preview">
+      <!-- Discord Message Header -->
+      <div class="flex items-center gap-3 mb-2.5">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center font-bold text-white shadow text-sm">
+          A
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-xs text-white">Ecys</span>
+            <span class="text-[10px] text-gray-400">Today at 8:54 PM</span>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Accent Color</label>
-            <div class="flex items-center gap-1.5">
-              <input id="input-color-picker" type="color" value="#18cfdc" class="w-8 h-8 rounded cursor-pointer p-0 border-0" oninput="onColorPicker(this.value)" />
-              <input id="input-color-hex" type="text" value="#18cfdc" class="w-full px-2 py-2 rounded text-xs font-mono" oninput="onColorHex(this.value)" />
+          <div class="text-xs text-[#00a8fc] hover:underline cursor-pointer">https://arcturusmc.org/</div>
+        </div>
+      </div>
+
+      <!-- Discord Component Embed Container (Type 17) -->
+      <div class="ml-2 sm:ml-12">
+        <div id="preview-embed-card" class="embed-card rounded-r-md p-3.5 max-w-lg shadow-sm space-y-2.5">
+          
+          <!-- 1. Top Hero Banner (Media Gallery Type 12) -->
+          <div id="preview-hero-container" class="rounded-md overflow-hidden bg-[#1e1f22] border border-[#3f4147]">
+            <img id="preview-hero-img" src="https://www.arcturusmc.org/images/arcturus-night.webp" alt="Arcturus Spawn Banner" class="w-full object-cover max-h-56 transition-transform duration-300 hover:scale-[1.01]" />
+          </div>
+
+          <!-- 2. Decorative Divider (Text Display Type 10) -->
+          <div id="preview-div-1" class="text-[11px] text-center text-cyan-300/80 font-mono tracking-widest select-none">
+            ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️
+          </div>
+
+          <!-- 3. Section with Thumbnail (Type 9) -->
+          <div class="flex items-start justify-between gap-3 bg-[#232428]/60 p-2.5 rounded border border-[#383a40]">
+            <div class="flex-1 min-w-0">
+              <div id="preview-section-title" class="text-sm font-bold text-white mb-1 markdown-content">
+                <!-- Rendered via parseDiscordMarkdown -->
+              </div>
+              <div id="preview-section-desc" class="text-xs text-gray-300 markdown-content space-y-1">
+                <!-- Rendered via parseDiscordMarkdown -->
+              </div>
+            </div>
+            <!-- Thumbnail Accessory (Type 11) -->
+            <div class="shrink-0">
+              <img id="preview-thumb-img" src="https://www.arcturusmc.org/assets/logo.png" alt="Arcturus Logo" class="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-md bg-[#1e1f22] border border-[#3f4147] p-1.5 shadow" />
             </div>
           </div>
+
+          <!-- 4. Middle Showcase / YouTube Trailer Banner (Media Gallery Type 12) -->
+          <div id="preview-showcase-container" class="relative rounded-md overflow-hidden bg-[#1e1f22] border border-[#3f4147] group cursor-pointer" onclick="window.open(document.getElementById('input-yt-url').value, '_blank')">
+            <img id="preview-showcase-img" src="https://www.arcturusmc.org/images/trailer.jpg" alt="Official Trailer" class="w-full object-cover max-h-52" />
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+              <div class="w-12 h-12 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Trailer Caption (Text Display Type 10) -->
+          <div id="preview-trailer-caption" class="text-xs text-center text-gray-300 markdown-content italic">
+            <!-- Rendered via parseDiscordMarkdown -->
+          </div>
+
+          <!-- 6. Decorative Divider (Text Display Type 10) -->
+          <div id="preview-div-2" class="text-[11px] text-center text-cyan-300/80 font-mono tracking-widest select-none">
+            ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️
+          </div>
+
+          <!-- 7. Server Stats Box (Text Display Type 10 / Code Block) -->
+          <div id="preview-stats-box" class="markdown-content">
+            <!-- Rendered via parseDiscordMarkdown -->
+          </div>
+
+          <!-- 8. Custom Animated Server Banner (Media Gallery Type 12) -->
+          <div id="preview-banner-container" class="rounded overflow-hidden border border-[#3f4147] bg-[#1e1f22] flex justify-center p-1">
+            <img id="preview-banner-img" src="https://www.arcturusmc.org/images/banner.gif" alt="Server Banner" class="max-w-full h-auto rounded" />
+          </div>
+
+          <!-- 9. Separator (Type 14) -->
+          <div class="border-t border-[#3f4147]/80 my-1"></div>
+
+          <!-- 10. Action Row 1 (Type 1, 3 Link Buttons) -->
+          <div id="preview-btn-row-1" class="grid grid-cols-3 gap-2">
+            <a id="preview-btn-1" href="https://www.arcturusmc.org/vote" target="_blank" class="discord-btn flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-white shadow-sm">
+              <span id="preview-btn-1-icon">🗳️</span>
+              <span id="preview-btn-1-label">Vote</span>
+              <svg class="w-3 h-3 text-gray-400 shrink-0 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+            <a id="preview-btn-2" href="https://store.arcturusmc.org" target="_blank" class="discord-btn flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-white shadow-sm">
+              <span id="preview-btn-2-icon">🛒</span>
+              <span id="preview-btn-2-label">Store</span>
+              <svg class="w-3 h-3 text-gray-400 shrink-0 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+            <a id="preview-btn-3" href="https://discord.gg/DTR6serkeM" target="_blank" class="discord-btn flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-white shadow-sm">
+              <span id="preview-btn-3-icon">💬</span>
+              <span id="preview-btn-3-label">Discord</span>
+              <svg class="w-3 h-3 text-gray-400 shrink-0 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          </div>
+
+          <!-- 11. Action Row 2 (Type 1, 2 Link Buttons) -->
+          <div id="preview-btn-row-2" class="grid grid-cols-2 gap-2">
+            <a id="preview-btn-4" href="https://www.youtube.com/watch?v=kPjvbbAWTJ0" target="_blank" class="discord-btn flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-white shadow-sm">
+              <span id="preview-btn-4-icon">🎬</span>
+              <span id="preview-btn-4-label">Watch Trailer</span>
+              <svg class="w-3 h-3 text-gray-400 shrink-0 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+            <a id="preview-btn-5" href="https://www.arcturusmc.org/" target="_blank" class="discord-btn flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-white shadow-sm">
+              <span id="preview-btn-5-icon">🌐</span>
+              <span id="preview-btn-5-label">Official Website</span>
+              <svg class="w-3 h-3 text-gray-400 shrink-0 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          </div>
+
+          <!-- 12. Bottom Decorative Divider (Text Display Type 10) -->
+          <div id="preview-div-3" class="text-[11px] text-center text-cyan-300/80 font-mono tracking-widest select-none">
+            ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: REAL-TIME EDITOR -->
+    <div id="tab-editor" class="hidden space-y-3.5 max-h-[600px] overflow-y-auto pr-1">
+      
+      <!-- Accent Color Setting -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 bg-[#2b2d31] rounded border border-[#3f4147]">
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-300 mb-1">Accent Bar Color</label>
+          <div class="flex items-center gap-2">
+            <input id="input-color-picker" type="color" value="#18cfdc" oninput="onColorPicker(this.value)" class="w-8 h-8 rounded cursor-pointer border-0 p-0" />
+            <input id="input-color-hex" type="text" value="#18cfdc" oninput="onColorHex(this.value)" class="w-24 px-2 py-1 rounded text-xs font-mono uppercase" />
+          </div>
+        </div>
+        <div class="flex items-center text-[11px] text-gray-400">
+          Electric cyan brand color (`#18cfdc` &rarr; decimal `1626076`)
+        </div>
+      </div>
+
+      <!-- Top Hero Banner Image URL -->
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-300 mb-1">1. Top Hero Banner URL (Type 12)</label>
+        <input id="input-hero-image" type="text" value="https://www.arcturusmc.org/images/arcturus-night.webp" class="w-full px-2.5 py-1.5 rounded text-xs font-mono" oninput="updateLive()" />
+      </div>
+
+      <!-- Section Title & Description -->
+      <div class="p-2.5 bg-[#2b2d31] rounded border border-[#3f4147] space-y-2">
+        <label class="block text-[11px] font-semibold text-gray-300">2. Section Content & Thumbnail (Type 9 & 11)</label>
+        
+        <div>
+          <span class="text-[10px] text-gray-400">Section Title:</span>
+          <input id="input-section-title" type="text" value="🌌 **Arcturus Factions & KitPvP** ⚔️" class="w-full px-2 py-1 rounded text-xs font-semibold" oninput="updateLive()" />
         </div>
 
-        <!-- Description with Markdown Toolbar -->
         <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-xs font-semibold text-gray-300">Blurb / Description</label>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-gray-400">Description & Feature Tree (Supports Discord Markdown):</span>
             <div class="flex items-center gap-1">
               <button type="button" onclick="insertFmt('**', '**')" class="fmt-btn" title="Bold">B</button>
-              <button type="button" onclick="insertFmt('*', '*')" class="fmt-btn italic" title="Italic">I</button>
-              <button type="button" onclick="insertFmt('__', '__')" class="fmt-btn underline" title="Underline">U</button>
-              <button type="button" onclick="insertFmt('~~', '~~')" class="fmt-btn line-through" title="Strikethrough">S</button>
-              <button type="button" onclick="insertFmt('`', '`')" class="fmt-btn font-mono" title="Code">&lt;&gt;</button>
-              <button type="button" onclick="insertFmt('[', '](https://...)')" class="fmt-btn" title="Link">🔗</button>
+              <button type="button" onclick="insertFmt('*', '*')" class="fmt-btn" title="Italic">I</button>
+              <button type="button" onclick="insertFmt('__', '__')" class="fmt-btn" title="Underline">U</button>
+              <button type="button" onclick="insertFmt('`', '`')" class="fmt-btn" title="Code">&lt;&gt;</button>
+              <button type="button" onclick="insertFmt('[', '](url)')" class="fmt-btn" title="Link">🔗</button>
               <button type="button" onclick="insertFmt('||', '||')" class="fmt-btn" title="Spoiler">||</button>
-              <button type="button" onclick="insertFmt('\n- ', '')" class="fmt-btn" title="Bullet List">• List</button>
             </div>
           </div>
-          <textarea id="input-blurb" rows="5" class="w-full px-3 py-2.5 rounded text-xs leading-relaxed font-mono" oninput="updateLive()">ArcturusMC is a **cracked Minecraft Java+Bedrock** server supporting 1.8–26.2 clients.
+          <textarea id="input-section-desc" rows="6" class="w-full px-2.5 py-1.5 rounded text-xs font-mono leading-relaxed" oninput="updateLive()">*A next-gen competitive Minecraft network with smooth 1.8 PvP, custom cannons, pet combat, and a fair non-P2W economy.*
 
-We have:
-- **Monthly FactionsTop payouts** ($100 real money)
-- **Easy-to-learn custom enchants** (/enchanter)
-- **Pet PvP & custom cannons**</textarea>
+> ✦ ──────── ⚡ **Arcturus Factions** ⚡ ──────── ✦
+> [ 1.8 Combat ] • [ Cracked & Bedrock ] • [ Non-P2W ]
+
+. - ∘ -: ✧ :-  **Server Highlights** -: ✧ :- ∘ - .
+├── 🏆 `payouts`  :: Monthly $100 FactionsTop PayPal rewards!
+├── ⚡ `enchants` :: Balanced & easy-to-learn custom enchantments
+├── 🐾 `petpvp`   :: Pet leveling & custom combat abilities
+└── 🛡️ `crossplay`:: Java 1.8–1.21+ & Bedrock crossplay support</textarea>
         </div>
 
-        <!-- Image URL -->
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1">Hero Image URL</label>
-          <input id="input-image" type="text" value="https://www.arcturusmc.org/images/og-image.webp" class="w-full px-3 py-2 rounded text-xs font-mono" oninput="updateLive()" />
-          <div class="flex gap-2 mt-1.5 text-[11px]">
-            <button onclick="setImage('https://www.arcturusmc.org/images/og-image.webp')" class="text-cyan-400 hover:underline">Night Spawn</button>
-            <span class="text-gray-600">•</span>
-            <button onclick="setImage('https://www.arcturusmc.org/images/arcturus-factions.webp')" class="text-cyan-400 hover:underline">Factions Village</button>
-            <span class="text-gray-600">•</span>
-            <button onclick="setImage('https://www.arcturusmc.org/images/arcturus-wilds.webp')" class="text-cyan-400 hover:underline">PvP Arena</button>
-          </div>
+          <span class="text-[10px] text-gray-400">Section Thumbnail Accessory URL (Type 11):</span>
+          <input id="input-thumb-image" type="text" value="https://www.arcturusmc.org/assets/logo.png" class="w-full px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
         </div>
-
-        <!-- Buttons Section -->
-        <div class="border-t border-[#3f4147] pt-3">
-          <label class="block text-xs font-semibold text-gray-300 mb-2">Buttons (Icon | Label | URL)</label>
-          
-          <!-- Button 1 -->
-          <div class="grid grid-cols-12 gap-1.5 mb-2">
-            <input id="input-btn-1-icon" type="text" value="🗳️" class="col-span-2 px-2 py-1.5 text-center rounded text-xs" oninput="updateLive()" />
-            <input id="input-btn-1-label" type="text" value="Vote" class="col-span-3 px-2 py-1.5 rounded text-xs font-semibold" oninput="updateLive()" />
-            <input id="input-btn-1-url" type="text" value="https://www.arcturusmc.org/vote" class="col-span-7 px-2 py-1.5 rounded text-xs font-mono" oninput="updateLive()" />
-          </div>
-
-          <!-- Button 2 -->
-          <div class="grid grid-cols-12 gap-1.5 mb-2">
-            <input id="input-btn-2-icon" type="text" value="🛒" class="col-span-2 px-2 py-1.5 text-center rounded text-xs" oninput="updateLive()" />
-            <input id="input-btn-2-label" type="text" value="Store" class="col-span-3 px-2 py-1.5 rounded text-xs font-semibold" oninput="updateLive()" />
-            <input id="input-btn-2-url" type="text" value="https://store.arcturusmc.org" class="col-span-7 px-2 py-1.5 rounded text-xs font-mono" oninput="updateLive()" />
-          </div>
-
-          <!-- Button 3 -->
-          <div class="grid grid-cols-12 gap-1.5">
-            <input id="input-btn-3-icon" type="text" value="💬" class="col-span-2 px-2 py-1.5 text-center rounded text-xs" oninput="updateLive()" />
-            <input id="input-btn-3-label" type="text" value="Discord" class="col-span-3 px-2 py-1.5 rounded text-xs font-semibold" oninput="updateLive()" />
-            <input id="input-btn-3-url" type="text" value="https://discord.gg/DTR6serkeM" class="col-span-7 px-2 py-1.5 rounded text-xs font-mono" oninput="updateLive()" />
-          </div>
-        </div>
-
       </div>
 
-      <!-- RIGHT: Live Discord Preview & Code Output (7 cols) -->
-      <div class="lg:col-span-7 space-y-4">
+      <!-- Middle Showcase / YouTube Trailer Image URL -->
+      <div class="p-2.5 bg-[#2b2d31] rounded border border-[#3f4147] space-y-2">
+        <label class="block text-[11px] font-semibold text-gray-300">3. Trailer Showcase Banner & Caption (Type 12 & 10)</label>
+        <div>
+          <span class="text-[10px] text-gray-400">Showcase Image URL:</span>
+          <input id="input-showcase-image" type="text" value="https://www.arcturusmc.org/images/trailer.jpg" class="w-full px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
+        </div>
+        <div>
+          <span class="text-[10px] text-gray-400">YouTube Video URL:</span>
+          <input id="input-yt-url" type="text" value="https://www.youtube.com/watch?v=kPjvbbAWTJ0" class="w-full px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
+        </div>
+        <div>
+          <span class="text-[10px] text-gray-400">Caption Text:</span>
+          <input id="input-trailer-caption" type="text" value="*🎬 [Click to Watch Official Trailer](https://www.youtube.com/watch?v=kPjvbbAWTJ0) — Minecraft Factions Reimagined*" class="w-full px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
+        </div>
+      </div>
+
+      <!-- Server Stats Box -->
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-300 mb-1">4. Server Stats Box (Type 10 / Code Block)</label>
+        <textarea id="input-stats-box" rows="5" class="w-full px-2.5 py-1.5 rounded text-xs font-mono" oninput="updateLive()">```yaml
+✦ Server IP:       play.arcturusmc.org
+✦ Bedrock Port:    19132 (Default)
+✦ Version Support: 1.8 — 1.21+ (Java & Bedrock)
+✦ Competition:     $100 Monthly FactionsTop Payouts
+✦ Gameplay:        Custom Cannons • Pet PvP • Non-P2W
+```</textarea>
+      </div>
+
+      <!-- Custom Animated Banner GIF -->
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-300 mb-1">5. Custom Server Banner GIF (Type 12)</label>
+        <input id="input-banner-gif" type="text" value="https://www.arcturusmc.org/images/banner.gif" class="w-full px-2.5 py-1.5 rounded text-xs font-mono" oninput="updateLive()" />
+      </div>
+
+      <!-- Action Row Buttons -->
+      <div class="p-2.5 bg-[#2b2d31] rounded border border-[#3f4147] space-y-2">
+        <label class="block text-[11px] font-semibold text-gray-300">6. Action Row Buttons (Link Style 5)</label>
         
-        <!-- Live Discord Simulation Card -->
-        <div class="discord-bg rounded-xl p-5 shadow-xl border border-[#2b2d31]">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center justify-between">
-            <span>Discord Client Live Simulation</span>
-            <span class="text-[11px] text-gray-500">Components V2 Embed</span>
-          </h2>
-
-          <!-- Message Header -->
-          <div class="flex items-center gap-3 mb-2.5">
-            <div class="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-white shadow">
-              A
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-semibold text-sm text-white hover:underline cursor-pointer">Ecys</span>
-                <span class="text-[10px] text-gray-400">Today at 8:24 PM</span>
-              </div>
-              <div class="text-sm text-[#00a8fc] hover:underline cursor-pointer">https://arcturusmc.org/</div>
-            </div>
-          </div>
-
-          <!-- Embed Container -->
-          <div class="ml-13 pl-0.5">
-            <div id="preview-embed-card" class="embed-card rounded-r-md p-4 shadow-sm">
-              
-              <!-- Text Display -->
-              <div class="mb-3">
-                <div id="preview-title" class="text-lg font-bold text-white mb-2 markdown-content">
-                  <!-- Parsed Markdown -->
-                </div>
-                <div id="preview-blurb" class="text-sm text-gray-300 markdown-content space-y-1">
-                  <!-- Parsed Markdown -->
-                </div>
-              </div>
-
-              <!-- Media Gallery -->
-              <div id="preview-image-container" class="rounded-lg overflow-hidden my-3 border border-[#3f4147] shadow-inner">
-                <img 
-                  id="preview-image"
-                  src="https://www.arcturusmc.org/images/og-image.webp" 
-                  alt="ArcturusMC Spawn" 
-                  class="w-full h-auto object-cover max-h-64"
-                />
-              </div>
-
-              <!-- Separator -->
-              <div class="h-px bg-[#3f4147] my-3"></div>
-
-              <!-- Action Row Buttons -->
-              <div class="flex flex-wrap items-center gap-2 pt-1">
-                <a id="preview-btn-1" href="https://www.arcturusmc.org/vote" target="_blank" class="discord-btn text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 text-white no-underline shadow-sm">
-                  <span id="preview-btn-1-icon">🗳️</span>
-                  <span id="preview-btn-1-label">Vote</span>
-                  <svg class="w-3 h-3 text-gray-300 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
-
-                <a id="preview-btn-2" href="https://store.arcturusmc.org" target="_blank" class="discord-btn text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 text-white no-underline shadow-sm">
-                  <span id="preview-btn-2-icon">🛒</span>
-                  <span id="preview-btn-2-label">Store</span>
-                  <svg class="w-3 h-3 text-gray-300 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
-
-                <a id="preview-btn-3" href="https://discord.gg/DTR6serkeM" target="_blank" class="discord-btn text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 text-white no-underline shadow-sm">
-                  <span id="preview-btn-3-icon">💬</span>
-                  <span id="preview-btn-3-label">Discord</span>
-                  <svg class="w-3 h-3 text-gray-300 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
-              </div>
-
-            </div>
-          </div>
+        <div class="text-[10px] text-gray-400">Row 1 (3 Buttons):</div>
+        <!-- Button 1 -->
+        <div class="grid grid-cols-12 gap-1.5">
+          <input id="input-btn-1-icon" type="text" value="🗳️" class="col-span-2 px-1 py-1 text-center rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-1-label" type="text" value="Vote" class="col-span-3 px-2 py-1 rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-1-url" type="text" value="https://www.arcturusmc.org/vote" class="col-span-7 px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
         </div>
 
-        <!-- Real-Time Generated JSON View -->
-        <div class="discord-bg rounded-xl p-4 shadow-xl border border-[#2b2d31]">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs text-gray-300 font-bold uppercase tracking-wider">Live Generated JSON Payload</span>
-            <button onclick="copyJson()" id="copy-json-btn" class="px-2.5 py-1 text-xs bg-[#4e5058] hover:bg-[#6d6f78] text-white rounded font-medium transition">
-              Copy JSON
-            </button>
-          </div>
-          <pre id="code-output" class="p-3 bg-[#1e1f22] rounded text-emerald-400 overflow-x-auto text-[11px] font-mono leading-relaxed border border-[#3f4147] max-h-48"></pre>
+        <!-- Button 2 -->
+        <div class="grid grid-cols-12 gap-1.5">
+          <input id="input-btn-2-icon" type="text" value="🛒" class="col-span-2 px-1 py-1 text-center rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-2-label" type="text" value="Store" class="col-span-3 px-2 py-1 rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-2-url" type="text" value="https://store.arcturusmc.org" class="col-span-7 px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
+        </div>
+
+        <!-- Button 3 -->
+        <div class="grid grid-cols-12 gap-1.5">
+          <input id="input-btn-3-icon" type="text" value="💬" class="col-span-2 px-1 py-1 text-center rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-3-label" type="text" value="Discord" class="col-span-3 px-2 py-1 rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-3-url" type="text" value="https://discord.gg/DTR6serkeM" class="col-span-7 px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
+        </div>
+
+        <div class="text-[10px] text-gray-400 mt-2">Row 2 (2 Buttons):</div>
+        <!-- Button 4 -->
+        <div class="grid grid-cols-12 gap-1.5">
+          <input id="input-btn-4-icon" type="text" value="🎬" class="col-span-2 px-1 py-1 text-center rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-4-label" type="text" value="Watch Trailer" class="col-span-3 px-2 py-1 rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-4-url" type="text" value="https://www.youtube.com/watch?v=kPjvbbAWTJ0" class="col-span-7 px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
+        </div>
+
+        <!-- Button 5 -->
+        <div class="grid grid-cols-12 gap-1.5">
+          <input id="input-btn-5-icon" type="text" value="🌐" class="col-span-2 px-1 py-1 text-center rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-5-label" type="text" value="Official Website" class="col-span-3 px-2 py-1 rounded text-xs" oninput="updateLive()" />
+          <input id="input-btn-5-url" type="text" value="https://www.arcturusmc.org/" class="col-span-7 px-2 py-1 rounded text-xs font-mono" oninput="updateLive()" />
         </div>
 
       </div>
 
+    </div>
+
+    <!-- TAB 3: CODE EXPORT -->
+    <div id="tab-code" class="hidden space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-300 font-semibold">Generated Component Embed JSON (PR #8606):</span>
+        <button onclick="copyCode()" id="copy-btn" class="px-2.5 py-1 text-xs bg-cyan-600 hover:bg-cyan-500 text-white rounded font-medium transition">
+          Copy JSON
+        </button>
+      </div>
+      <pre id="code-output" class="p-3 bg-[#1e1f22] rounded text-emerald-400 overflow-x-auto text-[11px] font-mono leading-relaxed border border-[#3f4147] max-h-80"></pre>
     </div>
 
   </div>
@@ -279,6 +385,7 @@ We have:
     function parseDiscordMarkdown(text) {
       if (!text) return '';
 
+      // Escape HTML entities first to prevent injection
       let html = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -286,14 +393,14 @@ We have:
 
       // Code blocks ```code```
       html = html.replace(/```(?:[a-zA-Z0-9_-]+)?\n?([\s\S]*?)```/g, (m, code) => {
-        return `<pre class="bg-[#1e1f22] p-2 rounded text-xs font-mono text-gray-200 my-1 overflow-x-auto"><code>${code.trim()}</code></pre>`;
+        return `<pre class="bg-[#1e1f22] p-2.5 rounded text-[11px] font-mono text-[#2dc770] my-1 border border-[#383a40] overflow-x-auto leading-relaxed"><code>${code.trim()}</code></pre>`;
       });
 
       // Inline code `code`
-      html = html.replace(/`([^`\n]+)`/g, '<code class="bg-[#1e1f22] px-1 py-0.5 rounded text-[11px] font-mono text-emerald-300">$1</code>');
+      html = html.replace(/`([^`\n]+)`/g, '<code class="bg-[#1e1f22] px-1 py-0.5 rounded text-[11px] font-mono text-[#00d26a] border border-[#3f4147]">$1</code>');
 
       // Blockquotes > quote
-      html = html.replace(/^&gt; (.*)$/gm, '<div class="border-l-4 border-[#4e5058] pl-2 text-gray-400 my-0.5">$1</div>');
+      html = html.replace(/^&gt; (.*)$/gm, '<div class="border-l-4 border-cyan-500 pl-2 text-gray-300 my-0.5 bg-cyan-950/20 py-0.5 rounded-r">$1</div>');
 
       // Headings
       html = html.replace(/^### (.*)$/gm, '<h3 class="text-xs font-bold text-white mt-1 mb-0.5">$1</h3>');
@@ -333,7 +440,7 @@ We have:
     }
 
     function insertFmt(before, after) {
-      const textarea = document.getElementById('input-blurb');
+      const textarea = document.getElementById('input-section-desc');
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const text = textarea.value;
@@ -345,9 +452,26 @@ We have:
       updateLive();
     }
 
-    function setImage(url) {
-      document.getElementById('input-image').value = url;
-      updateLive();
+    function showTab(name) {
+      document.getElementById('tab-preview').classList.toggle('hidden', name !== 'preview');
+      document.getElementById('tab-editor').classList.toggle('hidden', name !== 'editor');
+      document.getElementById('tab-code').classList.toggle('hidden', name !== 'code');
+
+      document.getElementById('tab-btn-preview').className = (name === 'preview')
+        ? 'px-3.5 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white transition shadow-sm'
+        : 'px-3.5 py-1.5 text-xs font-semibold rounded bg-[#383a40] hover:bg-[#43454b] text-gray-200 transition';
+
+      document.getElementById('tab-btn-editor').className = (name === 'editor')
+        ? 'px-3.5 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white transition shadow-sm'
+        : 'px-3.5 py-1.5 text-xs font-semibold rounded bg-[#383a40] hover:bg-[#43454b] text-gray-200 transition';
+
+      document.getElementById('tab-btn-code').className = (name === 'code')
+        ? 'px-3.5 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white transition shadow-sm'
+        : 'px-3.5 py-1.5 text-xs font-semibold rounded bg-[#383a40] hover:bg-[#43454b] text-gray-200 transition';
+
+      if (name === 'code') {
+        updateCodeBlock();
+      }
     }
 
     function onColorPicker(hex) {
@@ -365,110 +489,176 @@ We have:
     }
 
     function updateLive() {
-      const rawTitle = document.getElementById('input-title').value;
-      const rawBlurb = document.getElementById('input-blurb').value;
-      const imageUrl = document.getElementById('input-image').value;
-
-      const btn1Icon = document.getElementById('input-btn-1-icon').value;
-      const btn1Label = document.getElementById('input-btn-1-label').value;
-      const btn1Url = document.getElementById('input-btn-1-url').value;
-
-      const btn2Icon = document.getElementById('input-btn-2-icon').value;
-      const btn2Label = document.getElementById('input-btn-2-label').value;
-      const btn2Url = document.getElementById('input-btn-2-url').value;
-
-      const btn3Icon = document.getElementById('input-btn-3-icon').value;
-      const btn3Label = document.getElementById('input-btn-3-label').value;
-      const btn3Url = document.getElementById('input-btn-3-url').value;
-
-      // Render Markdown in real-time!
-      document.getElementById('preview-title').innerHTML = parseDiscordMarkdown(rawTitle);
-      document.getElementById('preview-blurb').innerHTML = parseDiscordMarkdown(rawBlurb);
-      
-      const imgEl = document.getElementById('preview-image');
-      if (imageUrl && imageUrl.trim()) {
-        imgEl.src = imageUrl;
-        document.getElementById('preview-image-container').style.display = 'block';
-      } else {
-        document.getElementById('preview-image-container').style.display = 'none';
-      }
-
+      // 1. Color
+      currentColorInt = parseInt(currentColorHex.replace('#', ''), 16);
       document.getElementById('preview-embed-card').style.borderLeftColor = currentColorHex;
 
-      document.getElementById('preview-btn-1-icon').textContent = btn1Icon;
-      document.getElementById('preview-btn-1-label').textContent = btn1Label;
-      document.getElementById('preview-btn-1').href = btn1Url;
+      // 2. Images
+      const heroUrl = document.getElementById('input-hero-image').value;
+      document.getElementById('preview-hero-img').src = heroUrl;
 
-      document.getElementById('preview-btn-2-icon').textContent = btn2Icon;
-      document.getElementById('preview-btn-2-label').textContent = btn2Label;
-      document.getElementById('preview-btn-2').href = btn2Url;
+      const thumbUrl = document.getElementById('input-thumb-image').value;
+      document.getElementById('preview-thumb-img').src = thumbUrl;
 
-      document.getElementById('preview-btn-3-icon').textContent = btn3Icon;
-      document.getElementById('preview-btn-3-label').textContent = btn3Label;
-      document.getElementById('preview-btn-3').href = btn3Url;
+      const showcaseUrl = document.getElementById('input-showcase-image').value;
+      document.getElementById('preview-showcase-img').src = showcaseUrl;
 
-      currentColorInt = parseInt(currentColorHex.replace('#', ''), 16) || 0;
-      updateCodeBlock();
+      const bannerGif = document.getElementById('input-banner-gif').value;
+      document.getElementById('preview-banner-img').src = bannerGif;
+
+      // 3. Texts
+      const sectionTitle = document.getElementById('input-section-title').value;
+      document.getElementById('preview-section-title').innerHTML = parseDiscordMarkdown(sectionTitle);
+
+      const sectionDesc = document.getElementById('input-section-desc').value;
+      document.getElementById('preview-section-desc').innerHTML = parseDiscordMarkdown(sectionDesc);
+
+      const trailerCaption = document.getElementById('input-trailer-caption').value;
+      document.getElementById('preview-trailer-caption').innerHTML = parseDiscordMarkdown(trailerCaption);
+
+      const statsBox = document.getElementById('input-stats-box').value;
+      document.getElementById('preview-stats-box').innerHTML = parseDiscordMarkdown(statsBox);
+
+      // 4. Buttons
+      for (let i = 1; i <= 5; i++) {
+        const icon = document.getElementById(`input-btn-${i}-icon`).value;
+        const label = document.getElementById(`input-btn-${i}-label`).value;
+        const url = document.getElementById(`input-btn-${i}-url`).value;
+
+        document.getElementById(`preview-btn-${i}-icon`).textContent = icon;
+        document.getElementById(`preview-btn-${i}-label`).textContent = label;
+        document.getElementById(`preview-btn-${i}`).href = url;
+      }
     }
 
     function generatePayload() {
-      const rawTitle = document.getElementById('input-title').value;
-      const rawBlurb = document.getElementById('input-blurb').value;
+      const heroUrl = document.getElementById('input-hero-image').value;
+      const thumbUrl = document.getElementById('input-thumb-image').value;
+      const showcaseUrl = document.getElementById('input-showcase-image').value;
+      const bannerGif = document.getElementById('input-banner-gif').value;
 
-      let combinedContent = '';
-      if (rawTitle.startsWith('#')) {
-        combinedContent = `${rawTitle}\n${rawBlurb}`;
-      } else {
-        combinedContent = `# ${rawTitle}\n${rawBlurb}`;
-      }
+      const sectionTitle = document.getElementById('input-section-title').value;
+      const sectionDesc = document.getElementById('input-section-desc').value;
+      const combinedSectionContent = `${sectionTitle}\n${sectionDesc}`;
+
+      const trailerCaption = document.getElementById('input-trailer-caption').value;
+      const statsBox = document.getElementById('input-stats-box').value;
+
+      const divider = "❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️";
 
       return {
-        "component": {
-          "type": 17,
-          "accent_color": currentColorInt,
-          "components": [
+        component: {
+          type: 17,
+          accent_color: currentColorInt,
+          components: [
             {
-              "type": 10,
-              "content": combinedContent
-            },
-            {
-              "type": 12,
-              "items": [
+              type: 12,
+              items: [
                 {
-                  "media": { "url": document.getElementById('input-image').value },
-                  "description": "ArcturusMC Spawn"
+                  media: { url: heroUrl },
+                  description: "ArcturusMC Moonlit Spawn"
                 }
               ]
             },
             {
-              "type": 14,
-              "spacing": 1
+              type: 10,
+              content: divider
             },
             {
-              "type": 1,
-              "components": [
+              type: 9,
+              components: [
                 {
-                  "type": 2,
-                  "style": 5,
-                  "url": document.getElementById('input-btn-1-url').value,
-                  "label": document.getElementById('input-btn-1-label').value,
-                  "emoji": { "name": document.getElementById('input-btn-1-icon').value }
-                },
+                  type: 10,
+                  content: combinedSectionContent
+                }
+              ],
+              accessory: {
+                type: 11,
+                media: { url: thumbUrl }
+              }
+            },
+            {
+              type: 12,
+              items: [
                 {
-                  "type": 2,
-                  "style": 5,
-                  "url": document.getElementById('input-btn-2-url').value,
-                  "label": document.getElementById('input-btn-2-label').value,
-                  "emoji": { "name": document.getElementById('input-btn-2-icon').value }
-                },
-                {
-                  "type": 2,
-                  "style": 5,
-                  "url": document.getElementById('input-btn-3-url').value,
-                  "label": document.getElementById('input-btn-3-label').value,
-                  "emoji": { "name": document.getElementById('input-btn-3-icon').value }
+                  media: { url: showcaseUrl },
+                  description: "Arcturus Factions Reimagined Trailer"
                 }
               ]
+            },
+            {
+              type: 10,
+              content: trailerCaption
+            },
+            {
+              type: 10,
+              content: divider
+            },
+            {
+              type: 10,
+              content: statsBox
+            },
+            {
+              type: 12,
+              items: [
+                {
+                  media: { url: bannerGif },
+                  description: "play.arcturusmc.org"
+                }
+              ]
+            },
+            {
+              type: 14,
+              spacing: 1
+            },
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('input-btn-1-url').value,
+                  label: document.getElementById('input-btn-1-label').value,
+                  emoji: { name: document.getElementById('input-btn-1-icon').value }
+                },
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('input-btn-2-url').value,
+                  label: document.getElementById('input-btn-2-label').value,
+                  emoji: { name: document.getElementById('input-btn-2-icon').value }
+                },
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('input-btn-3-url').value,
+                  label: document.getElementById('input-btn-3-label').value,
+                  emoji: { name: document.getElementById('input-btn-3-icon').value }
+                }
+              ]
+            },
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('input-btn-4-url').value,
+                  label: document.getElementById('input-btn-4-label').value,
+                  emoji: { name: document.getElementById('input-btn-4-icon').value }
+                },
+                {
+                  type: 2,
+                  style: 5,
+                  url: document.getElementById('input-btn-5-url').value,
+                  label: document.getElementById('input-btn-5-label').value,
+                  emoji: { name: document.getElementById('input-btn-5-icon').value }
+                }
+              ]
+            },
+            {
+              type: 10,
+              content: divider
             }
           ]
         }
@@ -476,35 +666,24 @@ We have:
     }
 
     function updateCodeBlock() {
-      const code = JSON.stringify(generatePayload(), null, 2);
-      document.getElementById('code-output').textContent = code;
+      const payload = generatePayload();
+      document.getElementById('code-output').textContent = JSON.stringify(payload, null, 2);
     }
 
-    function copyJson() {
-      const code = JSON.stringify(generatePayload(), null, 2);
-      navigator.clipboard.writeText(code).then(() => {
-        const btn = document.getElementById('copy-json-btn');
-        btn.textContent = 'Copied!';
-        btn.classList.add('bg-emerald-600');
+    function copyCode() {
+      const payload = generatePayload();
+      navigator.clipboard.writeText(JSON.stringify(payload, null, 2)).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Copied!';
+        btn.className = 'px-2.5 py-1 text-xs bg-emerald-600 text-white rounded font-medium transition';
         setTimeout(() => {
           btn.textContent = 'Copy JSON';
-          btn.classList.remove('bg-emerald-600');
+          btn.className = 'px-2.5 py-1 text-xs bg-cyan-600 hover:bg-cyan-500 text-white rounded font-medium transition';
         }, 2000);
       });
     }
 
-    function copyFullScript() {
-      const payloadStr = JSON.stringify(generatePayload());
-      const scriptTag = `<script id="discord:component-embed" type="application/json">${payloadStr}<\\/script>`;
-      navigator.clipboard.writeText(scriptTag).then(() => {
-        const btn = document.getElementById('copy-script-btn');
-        btn.innerHTML = '<span>✅ Copied &lt;script&gt; Tag!</span>';
-        setTimeout(() => {
-          btn.innerHTML = '<span>📋 Copy &lt;script&gt; Tag</span>';
-        }, 2000);
-      });
-    }
-
+    // Initial render
     updateLive();
   </script>
 </body>

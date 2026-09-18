@@ -4,17 +4,66 @@
     "accent_color": 1626076,
     "components": [
       {
+        "type": 12,
+        "items": [
+          {
+            "media": {
+              "url": "https://www.arcturusmc.org/images/arcturus-night.webp"
+            },
+            "description": "ArcturusMC Moonlit Spawn"
+          }
+        ]
+      },
+      {
         "type": 10,
-        "content": "# **[ArcturusMC Factions & KitPvP](https://www.arcturusmc.org/)**\nArcturusMC is a **cracked Minecraft Java+Bedrock** server supporting 1.8–26.2 clients.\n\nWe have:\n- **Monthly FactionsTop payouts** ($100)\n- **Easy-to-learn custom enchants**\n- **Pet PvP & custom cannons**"
+        "content": "❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️"
+      },
+      {
+        "type": 9,
+        "components": [
+          {
+            "type": 10,
+            "content": "🌌 **Arcturus Factions & KitPvP** ⚔️\n*A next-gen competitive Minecraft network with smooth 1.8 PvP, custom cannons, pet combat, and a fair non-P2W economy.*\n\n> ✦ ──────── ⚡ **Arcturus Factions** ⚡ ──────── ✦\n> [ 1.8 Combat ] • [ Cracked & Bedrock ] • [ Non-P2W ]\n\n. - ∘ -: ✧ :-  **Server Highlights** -: ✧ :- ∘ - .\n├── 🏆 `payouts`  :: Monthly $100 FactionsTop PayPal rewards!\n├── ⚡ `enchants` :: Balanced & easy-to-learn custom enchantments\n├── 🐾 `petpvp`   :: Pet leveling & custom combat abilities\n└── 🛡️ `crossplay`:: Java 1.8–1.21+ & Bedrock crossplay support"
+          }
+        ],
+        "accessory": {
+          "type": 11,
+          "media": {
+            "url": "https://www.arcturusmc.org/assets/logo.png"
+          }
+        }
       },
       {
         "type": 12,
         "items": [
           {
             "media": {
-              "url": "https://www.arcturusmc.org/images/og-image.webp"
+              "url": "https://www.arcturusmc.org/images/trailer.jpg"
             },
-            "description": "ArcturusMC Spawn"
+            "description": "Arcturus Factions Reimagined Trailer"
+          }
+        ]
+      },
+      {
+        "type": 10,
+        "content": "*🎬 [Click to Watch Official Trailer](https://www.youtube.com/watch?v=kPjvbbAWTJ0) — Minecraft Factions Reimagined*"
+      },
+      {
+        "type": 10,
+        "content": "❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️"
+      },
+      {
+        "type": 10,
+        "content": "```yaml\n✦ Server IP:       play.arcturusmc.org\n✦ Bedrock Port:    19132 (Default)\n✦ Version Support: 1.8 — 1.21+ (Java & Bedrock)\n✦ Competition:     $100 Monthly FactionsTop Payouts\n✦ Gameplay:        Custom Cannons • Pet PvP • Non-P2W\n```"
+      },
+      {
+        "type": 12,
+        "items": [
+          {
+            "media": {
+              "url": "https://www.arcturusmc.org/images/banner.gif"
+            },
+            "description": "play.arcturusmc.org"
           }
         ]
       },
@@ -47,12 +96,39 @@
             "type": 2,
             "style": 5,
             "url": "https://discord.gg/DTR6serkeM",
-            "label": "Discord",
+            "label": "Join Discord",
             "emoji": {
               "name": "💬"
             }
           }
         ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 2,
+            "style": 5,
+            "url": "https://www.youtube.com/watch?v=kPjvbbAWTJ0",
+            "label": "Watch Trailer",
+            "emoji": {
+              "name": "🎬"
+            }
+          },
+          {
+            "type": 2,
+            "style": 5,
+            "url": "https://www.arcturusmc.org/",
+            "label": "Official Website",
+            "emoji": {
+              "name": "🌐"
+            }
+          }
+        ]
+      },
+      {
+        "type": 10,
+        "content": "❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️ ─── ❖ ─── ❄️"
       }
     ]
   }
