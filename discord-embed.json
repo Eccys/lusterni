@@ -1,0 +1,59 @@
+{
+  "component": {
+    "type": 17,
+    "accent_color": 1626076,
+    "components": [
+      {
+        "type": 10,
+        "content": "# **[ArcturusMC Factions & KitPvP](https://www.arcturusmc.org/)**\nArcturusMC is a cracked Minecraft Java+Bedrock server supporting 1.8–26.2 clients. We have monthly FactionsTop payouts, easy-to-learn custom enchants, and pet pvp."
+      },
+      {
+        "type": 12,
+        "items": [
+          {
+            "media": {
+              "url": "https://www.arcturusmc.org/images/og-image.webp"
+            },
+            "description": "ArcturusMC Spawn"
+          }
+        ]
+      },
+      {
+        "type": 14,
+        "spacing": 1
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 2,
+            "style": 5,
+            "url": "https://www.arcturusmc.org/vote",
+            "label": "Vote",
+            "emoji": {
+              "name": "🗳️"
+            }
+          },
+          {
+            "type": 2,
+            "style": 5,
+            "url": "https://store.arcturusmc.org",
+            "label": "Store",
+            "emoji": {
+              "name": "🛒"
+            }
+          },
+          {
+            "type": 2,
+            "style": 5,
+            "url": "https://discord.gg/DTR6serkeM",
+            "label": "Discord",
+            "emoji": {
+              "name": "💬"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

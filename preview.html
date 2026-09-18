@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Arcturus Discord Link Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    .discord-bg {
+      background-color: #313338;
+    }
+    .embed-card {
+      background-color: #2b2d31;
+      border-left: 4px solid #18cfdc;
+    }
+    .discord-btn {
+      background-color: #4e5058;
+      transition: background-color 0.15s ease;
+    }
+    .discord-btn:hover {
+      background-color: #6d6f78;
+    }
+  </style>
+</head>
+<body class="bg-[#1e1f22] text-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div class="max-w-xl w-full discord-bg rounded-lg p-5 shadow-2xl border border-[#1f2023]">
+    
+    <!-- Discord Message Header -->
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-white shadow">
+        A
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-sm hover:underline cursor-pointer text-white">Ecys</span>
+          <span class="text-[10px] text-gray-400">Today at 8:24 PM</span>
+        </div>
+        <div class="text-sm text-[#00a8fc] hover:underline cursor-pointer">https://arcturusmc.org/</div>
+      </div>
+    </div>
+
+    <!-- Discord Component Embed (PR #8606) -->
+    <div class="ml-13 pl-1">
+      <div class="embed-card rounded-r-md p-4 max-w-lg shadow-sm">
+        
+        <!-- Text Display (Type 10) -->
+        <div class="mb-3">
+          <h1 class="text-lg font-bold text-white mb-1 hover:underline cursor-pointer">
+            <a href="https://www.arcturusmc.org/" target="_blank" class="text-white hover:text-cyan-300">ArcturusMC Factions &amp; KitPvP</a>
+          </h1>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            ArcturusMC is a cracked Minecraft Java+Bedrock server supporting 1.8–26.2 clients. We have monthly FactionsTop payouts, easy-to-learn custom enchants, and pet pvp.
+          </p>
+        </div>
+
+        <!-- Media Gallery (Type 12) -->
+        <div class="rounded-lg overflow-hidden my-3 border border-[#3f4147] shadow-inner">
+          <img 
+            src="https://www.arcturusmc.org/images/og-image.webp" 
+            alt="ArcturusMC Spawn" 
+            class="w-full h-auto object-cover max-h-64"
+          />
+        </div>
+
+        <!-- Separator (Type 14) -->
+        <div class="h-px bg-[#3f4147] my-3"></div>
+
+        <!-- Action Row (Type 1) with 3 Buttons (Type 2, Style 5) -->
+        <div class="flex flex-wrap items-center gap-2 pt-1">
+          <a 
+            href="https://www.arcturusmc.org/vote" 
+            target="_blank" 
+            class="discord-btn text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 text-white no-underline shadow-sm hover:text-white"
+          >
+            <span>🗳️</span>
+            <span>Vote</span>
+            <svg class="w-3 h-3 text-gray-300 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+
+          <a 
+            href="https://store.arcturusmc.org" 
+            target="_blank" 
+            class="discord-btn text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 text-white no-underline shadow-sm hover:text-white"
+          >
+            <span>🛒</span>
+            <span>Store</span>
+            <svg class="w-3 h-3 text-gray-300 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+
+          <a 
+            href="https://discord.gg/DTR6serkeM" 
+            target="_blank" 
+            class="discord-btn text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 text-white no-underline shadow-sm hover:text-white"
+          >
+            <span>💬</span>
+            <span>Discord</span>
+            <svg class="w-3 h-3 text-gray-300 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
