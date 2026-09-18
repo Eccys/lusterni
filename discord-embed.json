@@ -23,7 +23,7 @@
         "components": [
           {
             "type": 10,
-            "content": "🌌 **Arcturus Factions & KitPvP** ⚔️\n*A next-gen competitive Minecraft network with smooth 1.8 PvP, custom cannons, pet combat, and a fair non-P2W economy.*\n\n> ✦ ──────── ⚡ **Arcturus Factions** ⚡ ──────── ✦\n> [ 1.8 Combat ] • [ Cracked & Bedrock ] • [ Non-P2W ]\n\n. - ∘ -: ✧ :-  **Server Highlights** -: ✧ :- ∘ - .\n├── 🏆 `payouts`  :: Monthly $100 FactionsTop PayPal rewards!\n├── ⚡ `enchants` :: Balanced & easy-to-learn custom enchantments\n├── 🐾 `petpvp`   :: Pet leveling & custom combat abilities\n└── 🛡️ `crossplay`:: Java 1.8–1.21+ & Bedrock crossplay support"
+            "content": "🌌 **Arcturus Factions & KitPvP** ⚔️\n*A next-gen competitive Minecraft network with smooth 1.8 PvP, custom cannons, pet combat, and a fair non-P2W economy.*\n\n> ✦ ──────── ⚡ **Arcturus Factions** ⚡ ──────── ✦\n> [ 1.8 Combat ] • [ Cracked & Bedrock ] • [ Non-P2W ]\n\n. - ° -: ✧ :- **Server Highlights** -: ✧ :- ° - .\n|-- 🏆 `payouts`  :: $100 Monthly FTop Cash\n|-- ⚡ `enchants` :: Simple Custom Enchants\n|-- 🐾 `petpvp`   :: Pet PvP & Custom Cannons\n|-- 🌐 `crossplay`:: Java 1.8+ & Bedrock Support"
           }
         ],
         "accessory": {
@@ -54,7 +54,7 @@
       },
       {
         "type": 10,
-        "content": "```yaml\n✦ Server IP:       play.arcturusmc.org\n✦ Bedrock Port:    19132 (Default)\n✦ Version Support: 1.8 — 1.21+ (Java & Bedrock)\n✦ Competition:     $100 Monthly FactionsTop Payouts\n✦ Gameplay:        Custom Cannons • Pet PvP • Non-P2W\n```"
+        "content": "```\n✦ Server IP:       play.arcturusmc.org\n✦ Bedrock Port:    19132 (Default)\n✦ Version Support: 1.8 — 1.21+ (Java & Bedrock)\n✦ Competition:     $100 Monthly FactionsTop Payouts\n✦ Gameplay:        Custom Cannons • Pet PvP • Non-P2W\n```"
       },
       {
         "type": 12,
