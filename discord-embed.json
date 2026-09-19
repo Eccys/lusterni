@@ -9,8 +9,7 @@
           {
             "media": {
               "url": "https://www.arcturusmc.org/images/arcturus-night.webp"
-            },
-            "description": "ArcturusMC Moonlit Spawn"
+            }
           }
         ]
       },
@@ -39,8 +38,7 @@
           {
             "media": {
               "url": "https://www.arcturusmc.org/images/trailer.jpg"
-            },
-            "description": "Arcturus Factions Reimagined Trailer"
+            }
           }
         ]
       },
@@ -62,14 +60,9 @@
           {
             "media": {
               "url": "https://www.arcturusmc.org/images/banner.gif"
-            },
-            "description": "play.arcturusmc.org"
+            }
           }
         ]
-      },
-      {
-        "type": 14,
-        "spacing": 1
       },
       {
         "type": 1,

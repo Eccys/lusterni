@@ -11,6 +11,7 @@ PORT = 8080
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX_PATH = os.path.join(ROOT_DIR, "index.html")
 JSON_PATH = os.path.join(ROOT_DIR, "discord-embed.json")
+EMBED_JSON_PATH = os.path.join(ROOT_DIR, "embed.json")
 
 class StudioHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -51,22 +52,29 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 body = self.rfile.read(content_len).decode("utf-8")
                 payload = json.loads(body)
 
-                # 1. Update discord-embed.json
+                # 1. Update discord-embed.json (indented for human readability)
                 with open(JSON_PATH, "w", encoding="utf-8") as f:
                     json.dump(payload, f, indent=2, ensure_ascii=False)
 
-                # 2. Update index.html
+                # 2. Update embed.json (compact raw bytes for Discord linked JSON)
                 compact = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
+                with open(EMBED_JSON_PATH, "w", encoding="utf-8") as f:
+                    f.write(compact)
+
+                # 3. Update index.html via safe slice replacement (avoids regex newline unescaping)
                 with open(INDEX_PATH, "r", encoding="utf-8") as f:
                     html = f.read()
 
-                pattern = r'<script id="discord:component-embed" type="application/json">.*?</script>'
-                replacement = f'<script id="discord:component-embed" type="application/json">{compact}</script>'
+                start_tag = '<script id="discord:component-embed" type="application/json">'
+                end_tag = '</script>'
+                start_pos = html.find(start_tag)
+                if start_pos == -1:
+                    raise Exception("Could not find start tag for discord:component-embed in index.html")
+                end_pos = html.find(end_tag, start_pos)
+                if end_pos == -1:
+                    raise Exception("Could not find end tag for discord:component-embed in index.html")
 
-                if not re.search(pattern, html):
-                    raise Exception("Could not find discord:component-embed script in index.html")
-
-                new_html = re.sub(pattern, replacement, html, count=1)
+                new_html = html[:start_pos + len(start_tag)] + compact + html[end_pos:]
                 with open(INDEX_PATH, "w", encoding="utf-8") as f:
                     f.write(new_html)
 
@@ -90,7 +98,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 msg = data.get("message", "Update Discord Component Embed from Studio")
 
                 # Git commit & push
-                add_res = subprocess.run(["git", "add", "index.html", "discord-embed.json"], cwd=ROOT_DIR, capture_output=True, text=True)
+                add_res = subprocess.run(["git", "add", "index.html", "discord-embed.json", "embed.json"], cwd=ROOT_DIR, capture_output=True, text=True)
                 commit_res = subprocess.run(["git", "commit", "-m", msg], cwd=ROOT_DIR, capture_output=True, text=True)
                 push_res = subprocess.run(["git", "push", "origin", "newgen"], cwd=ROOT_DIR, capture_output=True, text=True)
 
