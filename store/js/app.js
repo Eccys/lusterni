@@ -573,13 +573,22 @@
                </button>`
         }
       </div>`;
+    window.clearTimeout(closeModal.timer);
+    els.modalOverlay.setAttribute("aria-hidden", "false");
     els.modalOverlay.classList.add("is-open");
     initModalTouchEvents();
   }
 
   function closeModal() {
     els.modalOverlay.classList.remove("is-open");
+    els.modalOverlay.setAttribute("aria-hidden", "true");
     state.modalGallery = null;
+    window.clearTimeout(closeModal.timer);
+    closeModal.timer = window.setTimeout(() => {
+      if (!els.modalOverlay.classList.contains("is-open")) {
+        els.modalContainer.innerHTML = "";
+      }
+    }, 260);
   }
 
   function renderCategoryNav() {
@@ -751,8 +760,11 @@
     `;
   }
 
-  function renderCategorySection(category) {
-    const packages = (category.packages || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  function renderCategorySection(category, excludePackageId = null) {
+    let packages = (category.packages || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+    if (excludePackageId) {
+      packages = packages.filter((pkg) => Number(pkg.id) !== Number(excludePackageId));
+    }
     const cards = packages.map((pkg, idx) => renderPackageCard(pkg, idx)).join("");
     const desc = sanitizeContent(category.description);
 
@@ -807,13 +819,18 @@
         els.content.innerHTML = `<div class="hud-panel"><div class="hud-panel-header"><h2>Category not found</h2></div></div>`;
         return;
       }
-      els.content.innerHTML = renderCategorySection(cat);
+      const hasFeatured = (cat.packages || []).some((p) => Number(p.id) === Number(CONFIG.featuredPackageId));
+      if (hasFeatured) {
+        els.content.innerHTML = renderFeaturedPackage() + renderCategorySection(cat, CONFIG.featuredPackageId);
+      } else {
+        els.content.innerHTML = renderCategorySection(cat);
+      }
       return;
     }
 
-    // Home view: Featured package + all categories
+    // Home view: Featured package + all categories (excluding featured package from category grids to prevent duplicates)
     const featuredHtml = renderFeaturedPackage();
-    const sections = state.categories.map((c) => renderCategorySection(c)).join("");
+    const sections = state.categories.map((c) => renderCategorySection(c, CONFIG.featuredPackageId)).join("");
     els.content.innerHTML = `
       ${featuredHtml}
       ${sections}

@@ -717,6 +717,7 @@ body {
 
 .featured-card {
   position: relative;
+  z-index: 5;
   border: 1px solid var(--accent);
   border-radius: var(--radius);
   background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 10%, var(--card)) 0%, var(--card) 100%);
@@ -776,6 +777,8 @@ body {
 }
 
 .featured-details {
+  position: relative;
+  z-index: 6;
   cursor: pointer;
 }
 
@@ -1006,15 +1009,23 @@ body {
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 150;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .cart-drawer-overlay.is-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+}
+
+.cart-drawer-overlay:not(.is-open) {
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .cart-drawer {
@@ -1186,19 +1197,31 @@ body {
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .modal-overlay.is-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+}
+
+.modal-overlay:not(.is-open) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.modal-overlay:not(.is-open) * {
+  pointer-events: none !important;
 }
 
 .hud-modal {
