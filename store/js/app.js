@@ -319,8 +319,10 @@
     setBusy(true);
     try {
       const ident = state.basket?.ident || getStoredBasketIdent();
-      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages/${numericId}`, {
-        method: "DELETE",
+      if (!ident) return;
+      const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages/remove`, {
+        method: "POST",
+        body: JSON.stringify({ package_id: numericId }),
       });
       state.basket = res?.data || state.basket;
       showAlert("Package removed from cart");
