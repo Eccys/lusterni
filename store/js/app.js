@@ -6,7 +6,7 @@
     discord: "https://discord.gg/DTR6serkeM",
     discordId: "1127553089533120562",
     storageKey: "arcturus.tebex.basket",
-    featuredPackageId: 6052238, // 11,000 Gold Bundle
+    featuredPackageId: 7692691, // Slayer Set
   };
 
   const accountApi = `${CONFIG.apiRoot}/accounts/${CONFIG.publicToken}`;
@@ -19,6 +19,7 @@
     pendingPackageId: null,
     view: "home",
     categoryId: null,
+    modalGallery: null, // { images: [], index: 0, pkgId: null }
   };
 
   const els = {};
@@ -369,6 +370,101 @@
     els.cartDrawerOverlay.classList.remove("is-open");
   }
 
+  function getPackageImages(pkg) {
+    if (!pkg) return [];
+    const images = [];
+    const seen = new Set();
+
+    // 1. Media items from Tebex API (sort primary first)
+    if (Array.isArray(pkg.media) && pkg.media.length > 0) {
+      const sortedMedia = [...pkg.media].sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0));
+      for (const m of sortedMedia) {
+        const url = typeof m === "string" ? m : m?.url;
+        if (url && !seen.has(url)) {
+          seen.add(url);
+          images.push(url);
+        }
+      }
+    }
+
+    // 2. Primary image field if not yet present
+    if (pkg.image && !seen.has(pkg.image)) {
+      images.unshift(pkg.image);
+      seen.add(pkg.image);
+    }
+
+    // 3. Fallback for potential images array
+    if (Array.isArray(pkg.images)) {
+      for (const url of pkg.images) {
+        if (url && !seen.has(url)) {
+          seen.add(url);
+          images.push(url);
+        }
+      }
+    }
+
+    return images;
+  }
+
+  function setModalGalleryIndex(newIndex) {
+    if (!state.modalGallery || !state.modalGallery.images.length) return;
+    const count = state.modalGallery.images.length;
+    const nextIdx = ((newIndex % count) + count) % count;
+    state.modalGallery.index = nextIdx;
+
+    const track = $("#modalGalleryTrack");
+    if (track) {
+      const slides = track.querySelectorAll(".modal-gallery-slide");
+      slides.forEach((slide, idx) => {
+        const isActive = idx === nextIdx;
+        slide.classList.toggle("active", isActive);
+        slide.setAttribute("aria-hidden", String(!isActive));
+      });
+    }
+
+    const currentSpan = $(".gallery-counter-current");
+    if (currentSpan) {
+      currentSpan.textContent = String(nextIdx + 1);
+    }
+
+    const thumbsContainer = $(".modal-gallery-thumbs");
+    if (thumbsContainer) {
+      const thumbs = thumbsContainer.querySelectorAll(".modal-thumb-btn");
+      thumbs.forEach((thumb, idx) => {
+        const isActive = idx === nextIdx;
+        thumb.classList.toggle("active", isActive);
+        thumb.setAttribute("aria-selected", String(isActive));
+        if (isActive) {
+          thumb.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" });
+        }
+      });
+    }
+  }
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  function initModalTouchEvents() {
+    const viewport = $("#modalGalleryViewport");
+    if (!viewport) return;
+
+    viewport.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    viewport.addEventListener("touchend", (e) => {
+      const diffX = e.changedTouches[0].screenX - touchStartX;
+      const diffY = e.changedTouches[0].screenY - touchStartY;
+      if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX < 0) {
+          if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index + 1);
+        } else {
+          if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index - 1);
+        }
+      }
+    }, { passive: true });
+  }
+
   function openPackageModal(pkgId) {
     const pkg = state.packagesById.get(Number(pkgId));
     if (!pkg) return;
@@ -376,6 +472,67 @@
     const container = els.modalContainer;
     const sanitizedDesc = sanitizeContent(pkg.description);
     const inBasket = Boolean(packageInBasket(pkg.id));
+    const images = getPackageImages(pkg);
+    const hasMultipleImages = images.length > 1;
+
+    state.modalGallery = {
+      images,
+      index: 0,
+      pkgId: pkg.id,
+    };
+
+    let galleryHtml = "";
+    if (images.length > 0) {
+      const slidesHtml = images.map((imgUrl, idx) => `
+        <div class="modal-gallery-slide ${idx === 0 ? "active" : ""}" role="group" aria-roledescription="slide" aria-label="Image ${idx + 1} of ${images.length}" aria-hidden="${idx === 0 ? "false" : "true"}">
+          <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(pkg.name)} - Preview ${idx + 1}" loading="${idx === 0 ? "eager" : "lazy"}" draggable="false" />
+        </div>
+      `).join("");
+
+      const thumbsHtml = hasMultipleImages ? `
+        <div class="modal-gallery-thumbs" role="tablist" aria-label="Preview image thumbnails">
+          ${images.map((imgUrl, idx) => `
+            <button type="button" role="tab" class="modal-thumb-btn ${idx === 0 ? "active" : ""}" aria-selected="${idx === 0 ? "true" : "false"}" aria-label="View image ${idx + 1}" data-gallery-jump="${idx}">
+              <img src="${escapeHtml(imgUrl)}" alt="" loading="lazy" />
+            </button>
+          `).join("")}
+        </div>
+      ` : "";
+
+      const navControlsHtml = hasMultipleImages ? `
+        <button type="button" class="modal-gallery-btn modal-gallery-prev" data-gallery-prev aria-label="Previous image">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="modal-gallery-btn modal-gallery-next" data-gallery-next aria-label="Next image">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <div class="modal-gallery-counter" aria-live="polite">
+          <span class="gallery-counter-current">1</span> / <span class="gallery-counter-total">${images.length}</span>
+        </div>
+      ` : "";
+
+      galleryHtml = `
+        <div class="modal-gallery" role="region" aria-roledescription="carousel" aria-label="${escapeHtml(pkg.name)} preview images">
+          <div class="modal-gallery-viewport" id="modalGalleryViewport">
+            <div class="modal-gallery-track" id="modalGalleryTrack">
+              ${slidesHtml}
+            </div>
+            ${navControlsHtml}
+          </div>
+          ${thumbsHtml}
+        </div>
+      `;
+    } else {
+      galleryHtml = `
+        <div class="modal-gallery modal-gallery--empty">
+          <div class="modal-gallery-viewport modal-gallery-viewport--placeholder">
+            <div class="package-placeholder-icon" style="width: 5rem; height: 5rem; font-size: 2rem;">
+              <i class="fas fa-box-open"></i>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     container.innerHTML = `
       <div class="hud-modal-header">
@@ -385,7 +542,8 @@
         </button>
       </div>
       <div class="hud-modal-body">
-        ${sanitizedDesc ? `<div style="margin-bottom: 1.25rem;">${sanitizedDesc}</div>` : "<p>No special description provided.</p>"}
+        ${galleryHtml}
+        ${sanitizedDesc ? `<div class="modal-desc-content" style="margin-bottom: 1.25rem;">${sanitizedDesc}</div>` : "<p class='text-muted'>No description provided for this package.</p>"}
         ${
           pkg.disable_gifting
             ? ""
@@ -416,10 +574,12 @@
         }
       </div>`;
     els.modalOverlay.classList.add("is-open");
+    initModalTouchEvents();
   }
 
   function closeModal() {
     els.modalOverlay.classList.remove("is-open");
+    state.modalGallery = null;
   }
 
   function renderCategoryNav() {
@@ -546,7 +706,7 @@
   }
 
   function renderFeaturedPackage() {
-    const featPkg = state.packagesById.get(CONFIG.featuredPackageId) || state.packagesById.get(6052238);
+    const featPkg = state.packagesById.get(CONFIG.featuredPackageId) || state.packagesById.get(7692691) || state.packagesById.get(6052238);
     if (!featPkg) return "";
 
     const inBasket = Boolean(packageInBasket(featPkg.id));
@@ -561,18 +721,26 @@
            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart" style="margin-right: 0.35rem;"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg> Add to Cart
          </button>`;
 
+    const featImg = featPkg.image || (featPkg.media && featPkg.media[0]?.url) || 'https://dunb17ur4ymx4.cloudfront.net/packages/images/b4b967656817132c3ee7af10130a8a0b1a040327.png';
+    const isSlayer = Number(featPkg.id) === 7692691;
+    const badgeText = isSlayer ? "FEATURED DEAL &bull; BLACK MARKET" : "FEATURED DEAL &bull; BEST VALUE";
+    const descText = isSlayer
+      ? "Complete Black Market endgame armor and weapon equipment set. Includes all pictured Slayer items."
+      : (featPkg.description ? sanitizeContent(featPkg.description).replace(/<[^>]*>?/gm, "").trim() : "Exclusive limited-edition package deal.");
+    const valueTag = isSlayer ? "+ FULL SET" : "+ MAXIMUM VALUE";
+
     return `
       <section class="featured-section">
         <div class="featured-card" data-info="${featPkg.id}">
-          <div class="featured-badge"><span class="site-beacon"></span> FEATURED DEAL &bull; BEST VALUE</div>
+          <div class="featured-badge"><span class="site-beacon"></span> ${badgeText}</div>
           <div class="featured-inner">
             <div class="featured-img-wrap" data-info="${featPkg.id}">
-              <img src="${featPkg.image || 'https://dunb17ur4ymx4.cloudfront.net/packages/images/49b8bbfe7956a67c08114a55a94b659699cac845.gif'}" alt="${escapeHtml(featPkg.name)}" />
+              <img src="${featImg}" alt="${escapeHtml(featPkg.name)}" />
             </div>
             <div class="featured-details" data-info="${featPkg.id}">
-              <h2 data-info="${featPkg.id}">${escapeHtml(featPkg.name)} Bundle</h2>
-              <p data-info="${featPkg.id}">Gold is the premium currency on Arcturus for getting tiers, pinatas, and chest keys.</p>
-              <div class="featured-price" data-info="${featPkg.id}">${priceStr} <span class="featured-discount text-accent">+ MAXIMUM VALUE</span></div>
+              <h2 data-info="${featPkg.id}">${escapeHtml(featPkg.name)}</h2>
+              <p data-info="${featPkg.id}">${descText}</p>
+              <div class="featured-price" data-info="${featPkg.id}">${priceStr} <span class="featured-discount text-accent">${valueTag}</span></div>
             </div>
             <div class="featured-action">
               ${btnHtml}
@@ -746,6 +914,27 @@
       return;
     }
 
+    // Modal Gallery Navigation
+    if (event.target.closest("[data-gallery-prev]")) {
+      event.preventDefault();
+      if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index - 1);
+      return;
+    }
+
+    if (event.target.closest("[data-gallery-next]")) {
+      event.preventDefault();
+      if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index + 1);
+      return;
+    }
+
+    const jumpBtn = event.target.closest("[data-gallery-jump]");
+    if (jumpBtn) {
+      event.preventDefault();
+      const jumpIdx = Number(jumpBtn.getAttribute("data-gallery-jump"));
+      setModalGalleryIndex(jumpIdx);
+      return;
+    }
+
     // Toggle Gifting
     if (event.target.closest("[data-toggle-gift]")) {
       event.preventDefault();
@@ -860,6 +1049,23 @@
 
     document.addEventListener("click", onClick);
     document.addEventListener("submit", onSubmit);
+
+    window.addEventListener("keydown", (e) => {
+      if (!els.modalOverlay || !els.modalOverlay.classList.contains("is-open")) return;
+      if (e.key === "Escape") {
+        closeModal();
+      } else if (e.key === "ArrowLeft") {
+        if (state.modalGallery && state.modalGallery.images.length > 1) {
+          e.preventDefault();
+          setModalGalleryIndex(state.modalGallery.index - 1);
+        }
+      } else if (e.key === "ArrowRight") {
+        if (state.modalGallery && state.modalGallery.images.length > 1) {
+          e.preventDefault();
+          setModalGalleryIndex(state.modalGallery.index + 1);
+        }
+      }
+    });
 
     window.addEventListener("popstate", () => {
       const route = parseRoute();
