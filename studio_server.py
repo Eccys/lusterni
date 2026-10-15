@@ -57,7 +57,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     json.dump(payload, f, indent=2, ensure_ascii=False)
 
                 # 2. Update embed.json (compact raw bytes for Discord linked JSON)
-                compact = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
+                compact = json.dumps(payload, separators=(',', ':'), ensure_ascii=False).replace("</", "<\\/")
                 with open(EMBED_JSON_PATH, "w", encoding="utf-8") as f:
                     f.write(compact)
 
@@ -99,6 +99,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
 
                 # Git commit & push
                 add_res = subprocess.run(["git", "add", "index.html", "discord-embed.json", "embed.json"], cwd=ROOT_DIR, capture_output=True, text=True)
+                if add_res.returncode != 0:
+                    raise Exception(add_res.stderr or add_res.stdout or "git add failed")
                 commit_res = subprocess.run(["git", "commit", "-m", msg], cwd=ROOT_DIR, capture_output=True, text=True)
                 push_res = subprocess.run(["git", "push", "origin", "newgen"], cwd=ROOT_DIR, capture_output=True, text=True)
 
@@ -121,9 +123,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         self.send_error(404, "Not Found")
 
 def main():
-    # Allow address reuse
+    # Allow address reuse and bind strictly to localhost
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.ThreadingTCPServer(("", PORT), StudioHandler) as httpd:
+    with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), StudioHandler) as httpd:
         print(f"==================================================")
         print(f"  Discord Link Preview Studio IDE Live at:")
         print(f"  http://localhost:{PORT}")

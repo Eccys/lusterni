@@ -48,24 +48,21 @@
       .replace(/arcturusmc\.xyz/gi, "arcturusmc.org")
       .replace(
         /Gold is the premium currency on Arcturus for upgrading yourself and getting special items\.(\s*<br\s*\/?>\s*|\s*)(You can buy (?:ranks and pinatas|tiers, pinatas, and chest keys) with gold\.)?/gi,
-        "Gold is the premium currency on Arcturus for getting tiers, pinatas, and chest keys."
+        "Gold is the premium currency on Arcturus for getting tiers, pinatas, and chest keys.",
       )
       .replace(
         /You can buy (?:ranks and pinatas|tiers, pinatas, and chest keys) with gold\./gi,
-        "You can buy tiers, pinatas, and chest keys with gold."
+        "You can buy tiers, pinatas, and chest keys with gold.",
       )
-      .replace(
-        /open a crate at spawn!/gi,
-        "open a crate at spawn."
-      );
+      .replace(/open a crate at spawn!/gi, "open a crate at spawn.");
   }
 
   function completeUrl() {
-    return `${window.location.origin}/?checkout=complete`;
+    return `${window.location.origin}${window.location.pathname}?checkout=complete`;
   }
 
   function cancelUrl() {
-    return `${window.location.origin}/`;
+    return `${window.location.origin}${window.location.pathname}`;
   }
 
   async function api(url, options = {}) {
@@ -303,6 +300,7 @@
     setBusy(true);
     try {
       const ident = state.basket?.ident || getStoredBasketIdent();
+      if (!ident) return;
       const res = await api(`${CONFIG.apiRoot}/baskets/${ident}/packages/${numericId}`, {
         method: "PUT",
         body: JSON.stringify({ quantity: Number(newQty) }),
@@ -449,22 +447,30 @@
     const viewport = $("#modalGalleryViewport");
     if (!viewport) return;
 
-    viewport.addEventListener("touchstart", (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
+    viewport.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      },
+      { passive: true },
+    );
 
-    viewport.addEventListener("touchend", (e) => {
-      const diffX = e.changedTouches[0].screenX - touchStartX;
-      const diffY = e.changedTouches[0].screenY - touchStartY;
-      if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX < 0) {
-          if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index + 1);
-        } else {
-          if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index - 1);
+    viewport.addEventListener(
+      "touchend",
+      (e) => {
+        const diffX = e.changedTouches[0].screenX - touchStartX;
+        const diffY = e.changedTouches[0].screenY - touchStartY;
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX < 0) {
+            if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index + 1);
+          } else {
+            if (state.modalGallery) setModalGalleryIndex(state.modalGallery.index - 1);
+          }
         }
-      }
-    }, { passive: true });
+      },
+      { passive: true },
+    );
   }
 
   function openPackageModal(pkgId) {
@@ -485,23 +491,34 @@
 
     let galleryHtml = "";
     if (images.length > 0) {
-      const slidesHtml = images.map((imgUrl, idx) => `
+      const slidesHtml = images
+        .map(
+          (imgUrl, idx) => `
         <div class="modal-gallery-slide ${idx === 0 ? "active" : ""}" role="group" aria-roledescription="slide" aria-label="Image ${idx + 1} of ${images.length}" aria-hidden="${idx === 0 ? "false" : "true"}">
           <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(pkg.name)} - Preview ${idx + 1}" loading="${idx === 0 ? "eager" : "lazy"}" draggable="false" />
         </div>
-      `).join("");
+      `,
+        )
+        .join("");
 
-      const thumbsHtml = hasMultipleImages ? `
+      const thumbsHtml = hasMultipleImages
+        ? `
         <div class="modal-gallery-thumbs" role="tablist" aria-label="Preview image thumbnails">
-          ${images.map((imgUrl, idx) => `
+          ${images
+            .map(
+              (imgUrl, idx) => `
             <button type="button" role="tab" class="modal-thumb-btn ${idx === 0 ? "active" : ""}" aria-selected="${idx === 0 ? "true" : "false"}" aria-label="View image ${idx + 1}" data-gallery-jump="${idx}">
               <img src="${escapeHtml(imgUrl)}" alt="" loading="lazy" />
             </button>
-          `).join("")}
+          `,
+            )
+            .join("")}
         </div>
-      ` : "";
+      `
+        : "";
 
-      const navControlsHtml = hasMultipleImages ? `
+      const navControlsHtml = hasMultipleImages
+        ? `
         <button type="button" class="modal-gallery-btn modal-gallery-prev" data-gallery-prev aria-label="Previous image">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
@@ -511,7 +528,8 @@
         <div class="modal-gallery-counter" aria-live="polite">
           <span class="gallery-counter-current">1</span> / <span class="gallery-counter-total">${images.length}</span>
         </div>
-      ` : "";
+      `
+        : "";
 
       galleryHtml = `
         <div class="modal-gallery" role="region" aria-roledescription="carousel" aria-label="${escapeHtml(pkg.name)} preview images">
@@ -595,10 +613,12 @@
 
   function renderCategoryNav() {
     const activeCat = state.view === "category" ? Number(state.categoryId) : null;
-    const catItems = state.categories.map((cat) => {
-      const activeClass = activeCat === Number(cat.id) ? "active" : "";
-      return `<a href="/?category=${cat.id}" class="${activeClass}" data-route="category" data-category="${cat.id}">${escapeHtml(cat.name)}</a>`;
-    }).join("");
+    const catItems = state.categories
+      .map((cat) => {
+        const activeClass = activeCat === Number(cat.id) ? "active" : "";
+        return `<a href="/?category=${cat.id}" class="${activeClass}" data-route="category" data-category="${cat.id}">${escapeHtml(cat.name)}</a>`;
+      })
+      .join("");
 
     els.categoryNav.innerHTML = `
       <a href="/" class="${state.view === "home" || state.view === "complete" ? "active" : ""}" data-route="home">Home</a>
@@ -658,10 +678,11 @@
       return;
     }
 
-    els.cartDrawerItems.innerHTML = items.map((pkg) => {
-      const qty = Number(pkg.in_basket?.quantity || pkg.quantity || 1);
-      const price = pkg.in_basket?.price ?? pkg.total_price ?? pkg.base_price;
-      return `
+    els.cartDrawerItems.innerHTML = items
+      .map((pkg) => {
+        const qty = Number(pkg.in_basket?.quantity || pkg.quantity || 1);
+        const price = pkg.in_basket?.price ?? pkg.total_price ?? pkg.base_price;
+        return `
         <div class="cart-item">
           <div class="cart-item-info">
             <div class="cart-item-title">${escapeHtml(pkg.name)}</div>
@@ -674,7 +695,8 @@
           </div>
         </div>
       `;
-    }).join("");
+      })
+      .join("");
   }
 
   function renderPackageCard(pkg, index) {
@@ -717,7 +739,10 @@
   }
 
   function renderFeaturedPackage() {
-    const featPkg = state.packagesById.get(CONFIG.featuredPackageId) || state.packagesById.get(7692691) || state.packagesById.get(6052238);
+    const featPkg =
+      state.packagesById.get(CONFIG.featuredPackageId) ||
+      state.packagesById.get(7692691) ||
+      state.packagesById.get(6052238);
     if (!featPkg) return "";
 
     const inBasket = Boolean(packageInBasket(featPkg.id));
@@ -732,12 +757,21 @@
            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart" style="margin-right: 0.35rem;"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg> Add to Cart
          </button>`;
 
-    const featImg = featPkg.image || (featPkg.media && featPkg.media[0]?.url) || 'https://dunb17ur4ymx4.cloudfront.net/packages/images/b4b967656817132c3ee7af10130a8a0b1a040327.png';
+    const featImg =
+      featPkg.image ||
+      (featPkg.media && featPkg.media[0]?.url) ||
+      "https://dunb17ur4ymx4.cloudfront.net/packages/images/b4b967656817132c3ee7af10130a8a0b1a040327.png";
     const isSlayer = Number(featPkg.id) === 7692691;
-    const badgeText = isSlayer ? "FEATURED DEAL &bull; BLACK MARKET" : "FEATURED DEAL &bull; BEST VALUE";
+    const badgeText = isSlayer
+      ? "FEATURED DEAL &bull; BLACK MARKET"
+      : "FEATURED DEAL &bull; BEST VALUE";
     const descText = isSlayer
       ? "Complete Black Market endgame armor and weapon equipment set. Includes all pictured Slayer items."
-      : (featPkg.description ? sanitizeContent(featPkg.description).replace(/<[^>]*>?/gm, "").trim() : "Exclusive limited-edition package deal.");
+      : featPkg.description
+        ? sanitizeContent(featPkg.description)
+            .replace(/<[^>]*>?/gm, "")
+            .trim()
+        : "Exclusive limited-edition package deal.";
     const valueTag = isSlayer ? "+ FULL SET" : "+ MAXIMUM VALUE";
 
     return `
@@ -763,7 +797,9 @@
   }
 
   function renderCategorySection(category, excludePackageId = null) {
-    let packages = (category.packages || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+    let packages = (category.packages || [])
+      .slice()
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
     if (excludePackageId) {
       packages = packages.filter((pkg) => Number(pkg.id) !== Number(excludePackageId));
     }
@@ -821,9 +857,12 @@
         els.content.innerHTML = `<div class="hud-panel"><div class="hud-panel-header"><h2>Category not found</h2></div></div>`;
         return;
       }
-      const hasFeatured = (cat.packages || []).some((p) => Number(p.id) === Number(CONFIG.featuredPackageId));
+      const hasFeatured = (cat.packages || []).some(
+        (p) => Number(p.id) === Number(CONFIG.featuredPackageId),
+      );
       if (hasFeatured) {
-        els.content.innerHTML = renderFeaturedPackage() + renderCategorySection(cat, CONFIG.featuredPackageId);
+        els.content.innerHTML =
+          renderFeaturedPackage() + renderCategorySection(cat, CONFIG.featuredPackageId);
       } else {
         els.content.innerHTML = renderCategorySection(cat);
       }
@@ -832,7 +871,9 @@
 
     // Home view: Featured package + all categories (excluding featured package from category grids to prevent duplicates)
     const featuredHtml = renderFeaturedPackage();
-    const sections = state.categories.map((c) => renderCategorySection(c, CONFIG.featuredPackageId)).join("");
+    const sections = state.categories
+      .map((c) => renderCategorySection(c, CONFIG.featuredPackageId))
+      .join("");
     els.content.innerHTML = `
       ${featuredHtml}
       ${sections}
@@ -906,7 +947,10 @@
 
     // Package info modal via data-info (image, title, or featured card)
     const info = event.target.closest("[data-info]");
-    if (info && !event.target.closest("[data-add], [data-remove], [data-qty], .quantity-control, button, a")) {
+    if (
+      info &&
+      !event.target.closest("[data-add], [data-remove], [data-qty], .quantity-control, button, a")
+    ) {
       event.preventDefault();
       openPackageModal(info.getAttribute("data-info"));
       return;
