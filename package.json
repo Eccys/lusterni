@@ -1,0 +1,10 @@
+{
+  "name": "lusterni-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Arcturus Reborn static site and bundle verification suite",
+  "scripts": {
+    "test": "node --test test/site.test.mjs"
+  }
+}
